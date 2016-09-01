@@ -1,0 +1,51 @@
+/*
+
+Description:
+	A FRIL/prolog knowledge base representing a family.
+	Predicates include brothers, fathers, sisters, grandmothers, and cousins.
+	Sample queries included:
+		Is it true that Bob is Lisa's father?
+		Is it true that Juliet is Paul's mother?
+
+Authors:
+	Foertmeyer, Thomas
+	Li, Kendrick
+	Okel, Taylor
+
+Date:
+	08 Sept 2016
+
+*/
+
+/* ((female X)) holds when X is a female */
+((female Mary  ))
+((female Sandra ))
+((female Juliet ))
+((female Lisa ))
+
+/* ((male X)) holds when X is a male */ 
+ ((male Peter ))
+ ((male Paul ))
+ ((male Dick ))
+ ((male Bob ))
+ ((male Harry ))
+
+/* ((parent P C)) holds when P is C’s parent*/
+ ((parent Bob  Lisa ))
+ ((parent Bob  Paul ))
+ ((parent Bob  Mary  ))
+ ((parent Juliet  Lisa ))
+ ((parent Juliet  Paul ))
+ ((parent Juliet  Mary ))
+ ((parent Peter  Harry ))
+ ((parent Lisa  Harry ))
+ ((parent Mary   Dick ))
+ ((parent Mary   Sandra ))
+
+ /* ((brother X Y)) holds when X and Y have a common parent, X is a male and, X and Y are not the same */
+((brother X Y)
+(parent P X)
+(parent P Y)
+(male X) 
+(negg eq X Y))
+
