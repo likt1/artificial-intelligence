@@ -1,25 +1,22 @@
 /*
-
 Description:
-	A FRIL/prolog knowledge base representing a family.
-	Predicates include brothers, fathers, sisters, grandmothers, and cousins.
-	Sample queries included:
-		Is it true that Bob is Lisa's father?
-		Is it true that Juliet is Paul's mother?
-		Who is Paul's Sister?
-		Who is a grandomether?
-		Who is Mary's Cousin?
-
+    A FRIL/prolog knowledge base representing a family.
+    Predicates include brothers, fathers, sisters, grandmothers, and cousins.
+    Sample queries included:
+        Is it true that Bob is Lisa's father?
+        Is it true that Juliet is Paul's mother?
+        Who is Paul's Sister?
+        Who is a grandmother?
+        Who is Mary's Cousin?
 Authors:
-	Foertmeyer, Thomas
-	Li, Kendrick
-	Okel, Taylor
-
+    Foertmeyer, Thomas
+    Li, Kendrick
+    Okel, Taylor
 Date:
-	08 Sept 2016
-
+    08 Sept 2016
 */
 
+/* Knowledge Base */
 /* ((female X)) holds when X is a female */
 ((female Mary  ))
 ((female Sandra ))
@@ -27,28 +24,45 @@ Date:
 ((female Lisa ))
 
 /* ((male X)) holds when X is a male */ 
- ((male Peter ))
- ((male Paul ))
- ((male Dick ))
- ((male Bob ))
- ((male Harry ))
+((male Peter ))
+((male Paul ))
+((male Dick ))
+((male Bob ))
+((male Harry ))
 
 /* ((parent P C)) holds when P is C’s parent*/
- ((parent Bob  Lisa ))
- ((parent Bob  Paul ))
- ((parent Bob  Mary  ))
- ((parent Juliet  Lisa ))
- ((parent Juliet  Paul ))
- ((parent Juliet  Mary ))
- ((parent Peter  Harry ))
- ((parent Lisa  Harry ))
- ((parent Mary   Dick ))
- ((parent Mary   Sandra ))
+((parent Bob  Lisa ))
+((parent Bob  Paul ))
+((parent Bob  Mary  ))
+((parent Juliet  Lisa ))
+((parent Juliet  Paul ))
+((parent Juliet  Mary ))
+((parent Peter  Harry ))
+((parent Lisa  Harry ))
+((parent Mary   Dick ))
+((parent Mary   Sandra ))
+/* End Knowledge Base */
 
- /* ((brother X Y)) holds when X and Y have a common parent, X is a male and, X and Y are not the same */
+/* Predicates */ 
+/* ((brother X Y)) holds when X and Y have a common parent, X is a male and, X and Y are not the same */
 ((brother X Y)
 (parent P X)
 (parent P Y)
 (male X) 
 (negg eq X Y))
 
+/* ((father X Y)) holds when X is a parent of Y, x is a male, and X and Y are not the same */
+
+/* ((sister X Y)) holds when X and Y have a common parent, X is a female, and X and Y are not the same */
+
+/* ((grandmother X Y)) holds when X is a parent of one of Y's parents, X is a female, and X and Y are not the same */
+
+/* ((cousin X Y)) holds when X is a child of one of Y's parents siblings */
+/* End Predicates */
+
+/* Sample Queries */
+/* Is it true that Bob is Lisa's father? */
+/* Is it true that Juliet is Paul's mother? */
+/* Who is Paul's Sister? */
+/* Who is a grandmother? */
+/* Who is Mary's Cousin? */
