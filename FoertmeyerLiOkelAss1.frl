@@ -1,4 +1,4 @@
-/*
+﻿/*
 Description:
     A FRIL/prolog knowledge base representing a family.
     Predicates include brothers, fathers, sisters, grandmothers, and cousins.
@@ -46,23 +46,71 @@ Date:
 /* Predicates */ 
 /* ((brother X Y)) holds when X and Y have a common parent, X is a male and, X and Y are not the same */
 ((brother X Y)
-(parent P X)
-(parent P Y)
-(male X) 
-(negg eq X Y))
+   (parent P X)
+   (parent P Y)
+   (male X) 
+   (negg eq X Y))
 
 /* ((father X Y)) holds when X is a parent of Y, x is a male, and X and Y are not the same */
-
+((father X Y)
+   (parent X Y)
+   (male X)
+   (negg eq X Y)) /* Should fail the parent clause, redundancy */
+   
 /* ((sister X Y)) holds when X and Y have a common parent, X is a female, and X and Y are not the same */
+((sister X Y)
+   (parent P X)
+   (parent P Y)
+   (female X)
+   (negg eq X Y))
+   
+/* ((mother X Y)) holds when X is a parent of Y, x is a female, and X and Y are not the same */
+((mother X Y)
+   (parent X Y)
+   (female X)
+   (negg eq X Y)) /* Should fail the parent clause, redundancy */
 
 /* ((grandmother X Y)) holds when X is a parent of one of Y's parents, X is a female, and X and Y are not the same */
+((grandmother X Y)
+   (parent P Y)
+   (parent X P)
+   (female X)
+   (negg eq X Y)) /* Should fail the parent parent clause. Unless this is West Virginia. Who knows.*/
 
-/* ((cousin X Y)) holds when X is a child of one of Y's parents siblings */
+/* ((siblings X Y)) holds when X and Y share the same parent and are not the same */
+((siblings X Y)
+   (parent P X)
+   (parent P Y)
+   (negg eq X Y))
+   
+/* ((cousin X Y)) holds when X is a child of one of Y's parents siblings, X and Y are not the same */
+((cousin X Y)
+   (parent P Y)
+   (siblings P S) 
+   (parent S X)
+   (negg eq X Y)) 
+
 /* End Predicates */
+
+
 
 /* Sample Queries */
 /* Is it true that Bob is Lisa's father? */
+?((pp """Is it true that Bob is Lisa's father?"))
+?((father Bob Lisa)(pp "yes")) /* Only prints yes if the query suceeds (how to get it to print on its own?) */
+
 /* Is it true that Juliet is Paul's mother? */
+?((pp "" "Is it true that Juliet is Paul's mother?"))
+?((mother Juliet Paul)(pp "yes")) /* Only prints yes if the query suceeds (how to get it to print on its own?) */
+
 /* Who is Paul's Sister? */
+?((pp "" "Who is Paul's Sister?"))
+?((sister X Paul)(pp Paul X)(pp)(fail))
+
 /* Who is a grandmother? */
+?((pp """Who is a grandmother? "))
+?((grandmother X Y)(pp X Y)(pp)(fail))
+
 /* Who is Mary's Cousin? */
+?((pp """Who is Mary's Cousin? "))
+?((cousin Mary X)(pp Mary X)(pp)(fail))
