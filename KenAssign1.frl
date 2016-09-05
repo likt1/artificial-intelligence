@@ -1,0 +1,84 @@
+/* Database */
+/* ((female X)) holds when X is a female */
+((female Mary))
+((female Sandra))
+((female Juliet))
+((female Lisa))
+
+/* ((male X)) holds when X is a male */ 
+((male Peter))
+((male Paul))
+((male Dick))
+((male Bob))
+((male Harry))
+
+/* ((parent P C)) holds when P is C’s parent */
+((parent Bob Lisa))
+((parent Bob Paul))
+((parent Bob Mary))
+((parent Juliet Lisa))
+((parent Juliet Paul))
+((parent Juliet Mary))
+((parent Peter Harry))
+((parent Lisa Harry))
+((parent Mary Dick))
+((parent Mary Sandra))
+/* End database*/
+
+/* Test database for cousin */
+/* Enter James or Josephine to test, since Mary doesn't have a cousin */
+((female Jane))
+((male Arnold))
+((female Lily))
+((male James))
+((female Josephine))
+((parent Jane Arnold))
+((parent Jane Lily))
+((parent Arnold James))
+((parent Lily Josephine))
+/* End test database */
+
+/* ((father F C)) holds when F is C’s father */
+((father F C)
+	(parent F C)
+	(male F))
+
+/* ((sibling S X)) holds when S is X's sibling */
+((sibling S X)
+	(parent P S)
+	(parent P X)
+	(negg eq S X))
+	
+/* ((sister S X)) holds when S is X’s sister */
+((sister S X)
+	(sibling S X)
+	(female S))
+
+/* ((grandmother GM GC)) holds when GM is GC’s grandmother */
+((grandmother GM GC)
+	(parent P GC)
+	(parent GM P)
+	(female GM))
+	
+/* ((cousin C X)) holds when C is X’s cousin */
+((cousin C X)
+	(parent PC C)
+	(parent PX X)
+	(sibling PC PX))
+
+/* Prompts */
+?((pp "Is it true that Bob is Lisa's father?"))
+?((father Bob Lisa)(pp "True"))
+
+?((pp "Is it true that Juliet is Paul's mother?"))
+?((parent Juliet Paul)(female Juliet)(pp "True"))
+
+?((pp "Who is Paul's sister?"))
+?((sister S Paul)(pp S))
+
+?((pp "Who is a grandmother?"))
+?((grandmother GM X)(pp GM))
+
+?((pp "Who is Mary's cousin?"))
+?((cousin C Mary)(pp C))
+ 
