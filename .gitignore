@@ -1,2 +1,0 @@
-#ignore the exe, we don't need to send that back and forth.
-*.exe 
