@@ -270,8 +270,24 @@ BREADTH DEPTH SEARCHES
 ((greater_eq X Y) (less_eq Y X))
 
 /***************************************************************
-TEST
+TEST 
 ***************************************************************/
 ((goal 10))
 
 /*?((hybridDB 2 1 SOl))*/
+
+/***************************************************************
+DISCUSSION
+
+There is no certainty that HybridDB is faster than its component search algorithms.  It is only sometimes more efficient than breadth-first or depth-first search. Furthermore, HybridDB does not always find the shortest path. Breadth-first is at least guaranteed to find the shortest path, and depth-first may never terminate.
+
+Given more information about the locale of the goal node (whether it is close to the starting position or if it is deeper in the graph), HybridDB could be used to more efficiently search the graph by choosing the more efficient search or by using both. In the general case that this type of information is not available, the use of HybridDB may or may not outperform the component algorithms as the search would not be optimized fully.
+
+This conclusion applies when considering a goal node on a fringe of a graph, with the starting node in the center. Breadth-first search would need to exhaust every level of the graph to reach this node, thereby wasting some cycles on paths that are known not to contain the solution. HybridDB transcends this limitation by using depth-first like algorithms to reach the fringe that the goal is resting on, and the breadth-first like algorithms to find the solution in the most efficient manner from this point. Depth-first, by comparison, might do the same, but has the potential to find a longer (less efficient) path to the solution.
+
+In edge cases, such as the goal node residing on the first level of the graph (respective to the starting node) or a leaf node, breadth-first or depth-first searches would, respectively, find the most efficient path in the least amount of time. 
+
+These examples show that HybridDB’s algorithm is useful only in specific situations with some graph information - for instance, the area in which the goal node resides. 
+
+
+***************************************************************/
