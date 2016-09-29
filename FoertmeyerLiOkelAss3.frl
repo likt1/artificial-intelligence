@@ -1,20 +1,30 @@
 /*
- In five houses, each of a different color, live five persons, each of a different 
- nationality, each of whom prefers a different brand of candy, a different kind of pet,
- and a different drink.
+Description:
+    A knowledge constraint problem. Consider the following logic puzzle:
+        In five houses, each of a different color, live five persons, each of a different 
+        nationality, each of whom prefers a different brand of candy, a different kind of pet,
+        and a different drink.
 
- The Englishman lives in the red house.
- The Spaniard owns the dog.
- The Norwegian lives in the first house on the left.
- The green house is immediately to the right of the ivory house.
- The man who eats Hershey-bars lives in the house next to the man with the fox.
- Kit-Kats are eaten in the yellow house.
- The Norwegian lives next to the blue house.
- The Smarties eater owns snails.
- The Snickers eater drinks orange juice.
- The Ukrainian drinks tea.
- The Japanese eats Milky-Ways.
- Kit-Kats are eaten in a house next to the house where the horse is kept.
- Coffee is drunk in the green house.
- Milk is drunk in the middle house
+    Implements the knowledge base:
+        The Englishman lives in the red house.
+        The Spaniard owns the dog.
+        The Norwegian lives in the first house on the left.
+        The green house is immediately to the right of the ivory house.
+        The man who eats Hershey-bars lives in the house next to the man with the fox.
+        Kit-Kats are eaten in the yellow house.
+        The Norwegian lives next to the blue house.
+        The Smarties eater owns snails.
+        The Snickers eater drinks orange juice.
+        The Ukrainian drinks tea.
+        The Japanese eats Milky-Ways.
+        Kit-Kats are eaten in a house next to the house where the horse is kept.
+        Coffee is drunk in the green house.
+        Milk is drunk in the middle house
+
+Authors:
+    Foertmeyer, Thomas
+    Li, Kendrick
+    Okel, Taylor
+Date:
+    10 October 2016
 */
