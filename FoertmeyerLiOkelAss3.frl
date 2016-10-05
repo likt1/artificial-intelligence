@@ -57,15 +57,15 @@ Please turn in your program, along with a sample of runs attached to your progra
 /*PSUEDO CODE
 ******************************************
 ?((search <dict> <clause> RESULTS))
-Where <dict> is a dictionary (e.g. color) element to search for
-	TODO: what about general "house"?
-		- use "HOUSE", return all results as a list in house?
-And <clause> is the search clause (e.g. "in which the Norwegian lives")
-RESULTS will hold the result(s).
-	IF length == 0, no potential answer was found.
-	IF length == 1, an exact match was found.
-	IF length > 1, multiple matches were found -- display "potential" answer
-	EXCEPT for the general house case (unless we decide that "house" refers to order?)
+	Where <dict> is a dictionary (e.g. color) element to search for
+		TODO: what about general "house"?
+			- use "HOUSE", return all results as a list in house?
+	And <clause> is the search clause (e.g. "in which the Norwegian lives")
+	RESULTS will hold the result(s).
+		IF length == 0, no potential answer was found.
+		IF length == 1, an exact match was found.
+		IF length > 1, multiple matches were found -- display "potential" answer
+		EXCEPT for the general house case (unless we decide that "house" refers to order?)
 
 ~
 	
@@ -131,28 +131,10 @@ ELSE
 ((connect Milk Third))
 
 % 
-((connected A B)(negg eq A B)(connect A B))
-((connected A B)(negg eq A B)(connect B A))
+((connected A B)(connect A B))
+((connected A B)(connect B A))
 
-% Fit into variables
-((makeconnect)
-	(right A B)
-	(connected B 'Ivory')
-	(addcl ((connect Green A)))
-	(!)
-	(fail) % send into subsequent makeconnect clauses
-)
-((makeconnect )
-	(connected Fox NUM)
-	(order NUM)
-	(adjacent NUM TARGET)
-	(connect TARGET CANDY)
-	(negg candy CANDY)
-	(addcl ((maybeconnect Hershey-bars B)))
-	(fail)
-)
 
-?((makeconnect))
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 ((left First Second))
@@ -167,8 +149,8 @@ ELSE
 
 % Fit into variables
 ((makeconnect)
-	(right A B)
 	(connected B 'Ivory')
+	(right A B)
 	(addcl ((connect Green A)))
 	(!)
 	(fail) % send into subsequent makeconnect clauses
@@ -179,38 +161,12 @@ ELSE
 	(adjacent NUM TARGET)
 	(connect TARGET CANDY)
 	(negg candy CANDY)
-	(addcl ((maybeconnect Hershey-bars B)))
+	(addcl ((connect Hershey-bars B)))
+	(!)
 	(fail)
 )
 
-% Use these connections to create house objects.
-?((order NUM)(pp NUM)
-	(color COLOR)(connected NUM COLOR)(pp COLOR)
-	(connected NUM DRINK)(drink DRINK)(pp DRINK)
-	(connected NUM CANDY)(candy CANDY)(pp CANDY)
-	(connected NUM PET)(pet PET)(pp PET)
-)
-
-((makeconnections)
-	(order NUM)
-	(connected NUM A)
-	(connected A B)
-	(not connected NUM B)
-	(addcl (connect NUM B))
-	(fail)
-)	
-
-((makehouses )
-	(order NUM)
-	(connected NUM NATION)(nation NATION)
-	(connected NUM COLOR)(color COLOR)
-	(connected NUM DRINK)(drink DRINK)
-	(connected NUM CANDY)(candy CANDY)
-	(connected NUM PET)(pet PET)
-	(addcl (house NUM NATION COLOR DRINK CANDY PET))
-	(pp 'House Created')
-	(fail)
-)
+?((makeconnect))
 
 ((member OBJ ())
 	(!)
@@ -221,6 +177,16 @@ ELSE
 )
 ((member OBJ (H|T))
 	(member OBJ T)
+)
+
+% Search for all results related to CLAUSE
+((search CLAUSE)
+	
+)
+
+% Filter search result by TYPE
+((search TYPE CLAUSE)
+
 )
 
 /*
