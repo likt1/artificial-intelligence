@@ -1,3 +1,20 @@
+/*
+Authors:
+    Foertmeyer, Thomas
+    Li, Kendrick
+    Okel, Taylor
+Date:
+    10 October 2016
+*/
+
+/*
+Description:
+    A knowledge constraint problem. Consider the following logic puzzle:
+        In five houses, each of a different color, live five persons, each of a different 
+        nationality, each of whom prefers a different brand of candy, a different kind of pet,
+        and a different drink.
+*/
+
 /* SUMMARY
 =============================================================================================================================================
  In five houses, each of a different color, live five persons, each of a different 
@@ -135,7 +152,7 @@ ELSE
 	(fail)
 )
 
-?(makeconnect)
+?((makeconnect))
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 ((left First Second))
