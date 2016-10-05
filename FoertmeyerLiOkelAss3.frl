@@ -1,4 +1,5 @@
-/*
+/* SUMMARY
+=============================================================================================================================================
  In five houses, each of a different color, live five persons, each of a different 
  nationality, each of whom prefers a different brand of candy, a different kind of pet,
  and a different drink.
@@ -17,4 +18,204 @@
  Kit-Kats are eaten in a house next to the house where the horse is kept.
  Coffee is drunk in the green house.
  Milk is drunk in the middle house
+ 
+ Write a FRIL program which would allow you to implement this KB and allow you to answer various questions such as:
+What color is the house in which the Norwegian lives?
+What color is the house in which the zebra lives?
+In which house is wine drank?
+In which house are Smarties eaten and orange juice drank?
+What color is the fifth house (last house on the right)?
+Who drinks what?
+Etc.
+ 
+If a query cannot be answered directly from the knowledge base, your program should generate possible answers.  
+For example, suppose the query is “who drinks water?”  The knowledge base contains no clause on anybody drinking water.  
+Rather than let the query fail, the program should output possible answers, for example “nobody drinks water”, 
+	or, eliminating those for which it can find what they drink, display the answer in the format “possibly <nationality> drinks water”.
+	
+Please turn in your program, along with a sample of runs attached to your program file as comments.
+==============================================================================================================================================
+*/
+
+/*PSUEDO CODE
+******************************************
+?((search <dict> <clause> RESULTS))
+Where <dict> is a dictionary (e.g. color) element to search for
+	TODO: what about general "house"?
+		- use "HOUSE", return all results as a list in house?
+And <clause> is the search clause (e.g. "in which the Norwegian lives")
+RESULTS will hold the result(s).
+	IF length == 0, no potential answer was found.
+	IF length == 1, an exact match was found.
+	IF length > 1, multiple matches were found -- display "potential" answer
+	EXCEPT for the general house case (unless we decide that "house" refers to order?)
+
+~
+	
+IF <dict> is a type
+	Search all connections off of <clause> for type dict
+		IF none, return "Nobody ___"
+			OR find inverse of the taken <dict> set, return these possibilities
+		IF one, return answer
+		IF multiple, return "Possibly ___" for all answers
+ELSE
+	Search all connections off of <clause>
+		IF none, return "Nobody ___"
+			OR find inverse of the taken sets, return those as possibilities
+******************************************
+*/
+
+% 
+((order First))
+((order Second))
+((order Third))
+((order Fourth))
+((order Fifth))
+%(order NUM)
+
+((nation Englishman))
+((nation Spaniard))
+((nation Norwegian))
+((nation Ukrainian))
+((nation Japanese))
+
+((color Red))
+((color Yellow))
+((color Green))
+((color Ivory))
+((color blue))
+
+((drink Milk))
+((drink OrangeJuice))
+((drink Tea))
+((drink Coffee))
+
+((candy Kit-Kats))
+((candy Smarties))
+((candy Snickers))
+((candy Hershey-bars))
+((candy Milky-Ways))
+
+((pet Fox))
+((pet Dog))
+((pet Snails))
+((pet Horse))
+
+%%%%%%%%%% Set up known connections %%%%%%%%%%%
+
+((connect Englishman Red))
+((connect Spaniard Dog))
+((connect Norwegian First))
+((connect Kit-Kats Yellow))
+((connect Smarties Snails))
+((connect Snickers OrangeJuice))
+((connect Ukrainian Tea))
+((connect Japanese Milky-Ways))
+((connect Milk Third))
+
+% 
+((connected A B)(negg eq A B)(connect A B))
+((connected A B)(negg eq A B)(connect B A))
+
+% Fit into variables
+((makeconnect)
+	(right A B)
+	(connected B 'Ivory')
+	(addcl ((connect Green A)))
+	(!)
+	(fail) % send into subsequent makeconnect clauses
+)
+((makeconnect )
+	(connected Fox NUM)
+	(order NUM)
+	(adjacent NUM TARGET)
+	(connect TARGET CANDY)
+	(negg candy CANDY)
+	(addcl ((maybeconnect Hershey-bars B)))
+	(fail)
+)
+
+?(makeconnect)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+((left First Second))
+((left Second Third))
+((left Third Fourth))
+((left Fourth Fifth))
+
+((right A B)(left B A))
+
+((adjacent A B)(left A B))
+((adjacent A B)(right A B))
+
+% Fit into variables
+((makeconnect)
+	(right A B)
+	(connected B 'Ivory')
+	(addcl ((connect Green A)))
+	(!)
+	(fail) % send into subsequent makeconnect clauses
+)
+((makeconnect )
+	(connected Fox NUM)
+	(order NUM)
+	(adjacent NUM TARGET)
+	(connect TARGET CANDY)
+	(negg candy CANDY)
+	(addcl ((maybeconnect Hershey-bars B)))
+	(fail)
+)
+
+% Use these connections to create house objects.
+?((order NUM)(pp NUM)
+	(color COLOR)(connected NUM COLOR)(pp COLOR)
+	(connected NUM DRINK)(drink DRINK)(pp DRINK)
+	(connected NUM CANDY)(candy CANDY)(pp CANDY)
+	(connected NUM PET)(pet PET)(pp PET)
+)
+
+((makeconnections)
+	(order NUM)
+	(connected NUM A)
+	(connected A B)
+	(not connected NUM B)
+	(addcl (connect NUM B))
+	(fail)
+)	
+
+((makehouses )
+	(order NUM)
+	(connected NUM NATION)(nation NATION)
+	(connected NUM COLOR)(color COLOR)
+	(connected NUM DRINK)(drink DRINK)
+	(connected NUM CANDY)(candy CANDY)
+	(connected NUM PET)(pet PET)
+	(addcl (house NUM NATION COLOR DRINK CANDY PET))
+	(pp 'House Created')
+	(fail)
+)
+
+((member OBJ ())
+	(!)
+	(fail)
+)
+((member OBJ (H|T))
+	(eq OBJ H)
+)
+((member OBJ (H|T))
+	(member OBJ T)
+)
+
+/*
+((search (H|T))
+	%(pp H)
+	%(pp T)
+	(connect H OBJ)
+	(negg member OBJ (H|T))
+	(pp OBJ)
+	(search (H|(OBJ|T)))
+)
+((search (  | ( H | T )))
+ 
+)
 */

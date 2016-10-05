@@ -262,6 +262,14 @@ BREADTH DEPTH SEARCHES
 
 ((append () L L))
 ((append (H|T) L2 (H|L))(append T L2 L))
+/*
+	Head taken from first argument, appended to front of third
+	Tail of first argument is passed as the next (recursive) first argument
+	Third argument (post-append) passed as the next (recursive) third argument
+	Therefore, the head of the list is continuously appended to the third element
+	...
+	Don't know what the second does -> NPaths is passed into it
+*/
 
 ((pretty_print_solution () ))
 ((pretty_print_solution (H|T))(pp)(p H "->")(pretty_print_solution T))
