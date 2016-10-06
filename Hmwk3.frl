@@ -1,3 +1,5 @@
+% This is a dummy file used because I got tired of typing reload AsdfhEshdiCasdhAss3.frl in all the time
+
 /*
 Authors:
     Foertmeyer, Thomas
@@ -168,18 +170,7 @@ ELSE
 
 ?((makeconnect))
 
-/* member aux at bottom
-((member OBJ ())
-	(!)
-	(fail)
-)
-((member OBJ (H|T))
-	(eq OBJ H)
-)
-((member OBJ (H|T))
-	(member OBJ T)
-)
-
+/*
 % Search for all results related to CLAUSE
 ((search CLAUSE)
 	
@@ -203,7 +194,6 @@ ELSE
 )
 */
 
-
 ((search R G)                                           % Begin search on Root to Goal
     (kill goal)
     (addcl ((goal G)))
@@ -223,14 +213,14 @@ ELSE
     (goal H)
     (pp H)
 )
-((innerSearch (H | T) FG)                               % We checked H and it's not the goal,
-    (append (H) FG SEARCHED)                            % so append H to the top of FullGraph and save into SEARCHED
+((innerSearch (H | T) SEARCHED)                         % We checked H and it's not the goal,
+    (append (H) SEARCHED FG)                            % so append H to the top of SEARCHED and save into FullGraph
     (findall CHD                                        % Find all Child,
-        ((connected H CHD)(negg member CHD SEARCHED))   % that is connected to H and not searched before,
+        ((connected H CHD)(negg member CHD FG))         % that is connected to H and not searched before,
         CDN                                             % and save into a list Children
     )
     (append T CDN LIST)                                 % append CDN to the end of the rest of the search list and save into LIST
-    (innerSearch LIST SEARCHED)                         % search again on LIST with updated searched list
+    (innerSearch LIST FG)                               % search again on LIST with updated searched list
 )
 
 /* AUX MEMBERS */
