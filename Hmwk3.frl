@@ -106,24 +106,112 @@ Please turn in your program, along with a sample of runs attached to your progra
 ((connect Milk Third))
 ((connect Green Coffee))
 
+((relation Norwegian Blue adjacent))
+((relation Green Ivory right))
+((relation Kit-Kats Horse adjacent))
+((relation Hershey-bars Fox adjacent))
+
 /* TODO need to generate these logically.  I generated these manually */
 % Norwegian lives next to blue
     % since Norwegian is first, the only guy next to first is second
-((connect Blue Second))
+%((connect Blue Second))
+
+((makeconnect1)
+   (findOrder Blue ORD)
+   (pp ORD)
+   (adjacent ORD ADJ)
+   (pp ADJ)
+   (addcl ((maybeconnect Norwegian ADJ)))
+   (fail)   %hit both sides, if applicable
+)
+((makeconnect1)
+   (findOrder Norwegian ORD)
+   (pp ORD)
+   (adjacent ORD ADJ)
+   (pp ADJ)
+   (addcl ((maybeconnect Blue ADJ)))
+   (fail)
+)
+
+
 % Green house is immediately right of ivory
     % (Y B ((R I G) or (I G R))
     % since Norwegian is first, he can't be Red (Englishman), Blue (Second), Green (Ivory can't be on left), or Ivory (right is Blue)
 ((connect Norwegian Yellow))
+((makeconnect2)
+   (findOrder Ivory ORD)
+   (order ORD)
+   (right ORD RIGHT)
+   (addcl ((connect RIGHT Green)))
+)
+((makeconnect2)
+   (findOrder Green ORD)
+   (order ORD)
+   (left ORD LEFT)
+   (addcl ((connect RIGHT Ivory)))
+)
+
 % Kit-Kats dude is next to horse guy
     % Norwegian is Yellow now, so he eats Kit-Kats, which means horse must be Second
-((connect Horse Second))
+%((connect Horse Second))
+((makeconnect3)
+   (findOrder Kit-Kats ORD)
+   (order ORD)
+   (adjacent ORD ADJ)
+   (addcl ((maybeconnect ADJ Horse)))
+   (fail)
+)
+((makeconnect3)
+   (findOrder Horse ORD)
+   (order ORD)
+   (adjacent ORD ADJ)
+   (addcl ((maybeconnect ADJ Kit-Kats)))
+   (fail)
+)
+
 % Hershey-bars dude lives next to fox guy
     % IDK
+((makeconnect4)
+   (findOrder Hershey-bars ORD)
+   (order ORD)
+   (adjacent ORD ADJ)
+   (addcl ((maybeconnect ADJ Fox)))
+   (fail)
+)
+((makeconnect4)
+   (findOrder Fox ORD)
+   (order ORD)
+   (adjacent ORD ADJ)
+   (addcl ((maybeconnect ADJ Hershey-bars)))
+   (fail)
+)
+    
+((makeconnects)
+   % Find maybeconnect pair
+   (maybeconnect A B)
+   
+   (negg connected A B)
+   
+   %generate types
+   (getType A TYPEA)
+   (getType B TYPEB)
+   
+   %Determine if a pre-existing connection of this type has been made
+   (negg findType A TYPEB)
+   (negg findType B TYPEA)
+   
+   %Delete this maybeconnect and make a full connect.
+   (delcl ((maybeconnect A B)) ) 
+   (addcl ((connect A B)) ) 
+   
+   (fail)
+)
+((makeconnects)
+   (connected A B)
+   (delcl (((maybeconnect A B))) )
+)
 
-((relation Norwegian Blue Next))
-((relation Green Ivory Right))
-((relation Kit-Kats Horse Next))
-((relation Hershey-bars Fox Next))
+
 
 /* AUX MEMBERS */
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -135,6 +223,7 @@ Please turn in your program, along with a sample of runs attached to your progra
 
 ((connected A B)(connect A B))
 ((connected A B)(connect B A))
+%((connected A B)(search A B))
 
 ((left First Second))
 ((left Second Third))
@@ -153,25 +242,6 @@ Please turn in your program, along with a sample of runs attached to your progra
 ((between A B C)
     (left B C)
     (right A C)
-)
-
-% Fit into variables
-((makeconnect)
-	(connected B 'Ivory')
-	(right A B)
-	(addcl ((connect Green A)))
-	(!)
-	(fail) % send into subsequent makeconnect clauses
-)
-((makeconnect )
-	(connected Fox NUM)
-	(order NUM)
-	(adjacent NUM TARGET)
-	(connect TARGET CANDY)
-	(negg candy CANDY)
-	(addcl ((connect Hershey-bars B)))
-	(!)
-	(fail)
 )
 
 ?((makeconnect))
@@ -346,7 +416,7 @@ innerSearch will continue to search on <search list> until either the goal is fo
     (pp (possible values are POS))
 )
 
-/* 
+
 % Returns true if the LIST contains an attribute with the same type as ATT
 ((attTypeExists ATT LIST)
     (order ATT)
@@ -393,6 +463,15 @@ innerSearch will continue to search on <search list> until either the goal is fo
     (possible VALS ATT () POS)
     (pp (order not found for ATT))
     (pp (possible values are POS))
+)
+
+((findOrder ATT _)
+    (attExists ATT)
+    (pp (attribute does not exist))
+)
+((findOrder ATT ORD)
+    (order ORD)
+    (search ATT ORD)
 )
 
 % Finds the nationality for an ATTribute
@@ -473,4 +552,12 @@ innerSearch will continue to search on <search list> until either the goal is fo
     (pp (pet not found for ATT))
     (pp (possible values are POS))
 )
-*/
+
+((findType ATT TYPE)
+    (TYPE RESULT)
+    (search ATT RESULT)
+)
+((findType ATT TYPE RESULT)
+    (TYPE RESULT)
+    (search ATT RESULT)
+)
