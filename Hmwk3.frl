@@ -74,7 +74,7 @@ Please turn in your program, along with a sample of runs attached to your progra
 ((color Yellow))
 ((color Green))
 ((color Ivory))
-((color blue))
+((color Blue))
 
 ((drink Milk))
 ((drink OrangeJuice))
@@ -95,20 +95,35 @@ Please turn in your program, along with a sample of runs attached to your progra
 /* Set up known connections */
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%% TODO Missing predicates %%%%%%%%%%%%%%%%
 ((connect Englishman Red))
 ((connect Spaniard Dog))
 ((connect Norwegian First))
-% Green house is immediately right of ivory
-% Hershey-bars dude lives next to fox guy
-((connect Kit-Kats Yellow))
-% Norwegian lives next to blue
-((connect Smarties Snails))
-((connect Snickers OrangeJuice))
 ((connect Ukrainian Tea))
 ((connect Japanese Milky-Ways))
-% Kit-Kats dude is next to horse guy
+((connect Kit-Kats Yellow))
+((connect Smarties Snails))
+((connect Snickers OrangeJuice))
 ((connect Milk Third))
+((connect Green Coffee))
+
+/* TODO need to generate these logically.  I generated these manually */
+% Norwegian lives next to blue
+    % since Norwegian is first, the only guy next to first is second
+((connect Blue Second))
+% Green house is immediately right of ivory
+    % (Y B ((R I G) or (I G R))
+    % since Norwegian is first, he can't be Red (Englishman), Blue (Second), Green (Ivory can't be on left), or Ivory (right is Blue)
+((connect Norwegian Yellow))
+% Kit-Kats dude is next to horse guy
+    % Norwegian is Yellow now, so he eats Kit-Kats, which means horse must be Second
+((connect Horse Second))
+% Hershey-bars dude lives next to fox guy
+    % IDK
+
+((relation Norwegian Blue Next))
+((relation Green Ivory Right))
+((relation Kit-Kats Horse Next))
+((relation Hershey-bars Fox Next))
 
 /* AUX MEMBERS */
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -130,6 +145,15 @@ Please turn in your program, along with a sample of runs attached to your progra
 
 ((adjacent A B)(left A B))
 ((adjacent A B)(right A B))
+
+((between A B C)
+    (left A C)
+    (right B C)
+)
+((between A B C)
+    (left B C)
+    (right A C)
+)
 
 % Fit into variables
 ((makeconnect)
@@ -196,10 +220,10 @@ ELSE
         Goal was found and printed
         Cleanup
     
-(innerSearch <search list> <searched list>)
+(innerSearch <search list> <searched list> <full graph>)
     IF <search list> is empty, we have gone through the entire map and we were not able to find the goal
         Stop further execution
-        // We can print out <searched list> at this point in time to see the entire graph we have searched on
+        Save <full graph> as <searched list>
         Fail the clause
     ELSE IF goal is the head of <search list>
         Goal is connected to Root so they are connected!
@@ -216,7 +240,8 @@ innerSearch will continue to search on <search list> until either the goal is fo
 ((search R G)                                           % Begin search on Root to Goal
     (kill goal)
     (addcl ((goal G)))
-    (innerSearch (R) ())                                % run inner search function, we fail if search list is empty
+    (innerSearch (R) () FG)                             % run inner search function
+    (var FG)                                            % if FG is uninit, that means that we didn't fail 
     (delcl ((goal G)))                                  % cleanup
 )
 ((search _ _)                                           % If first clause failed, we didn't find anything
@@ -225,22 +250,26 @@ innerSearch will continue to search on <search list> until either the goal is fo
     (fail)
 )
 
-((innerSearch () FG)                                    % If the search list is empty, we didn't find anything
-    (!)                                                 % cut and fail
-    (fail)
+((innerSearch () FG FG)                                 % If the search list is empty, we didn't find anything
+    (!)                                                 % cut and assign the full graph to the full graph var on right
 )
-((innerSearch (H | _) _)                                % If the head is the goal, print goal and exit
+((innerSearch (H | _) _ _)                              % If the head is the goal, print goal and exit
     (goal H)
     (pp H)
 )
-((innerSearch (H | T) FG)                               % We checked H and it's not the goal,
-    (append (H) FG SEARCHED)                            % so append H to the top of FullGraph and save into SEARCHED
+((innerSearch (H | T) SL FG)                            % We checked H and it's not the goal,
+    (append (H) SL SEARCHED)                            % so append H to the top of FullGraph and save into SEARCHED
     (findall CHD                                        % Find all Child,
         ((connected H CHD)(negg member CHD SEARCHED))   % that is connected to H and not searched before,
         CDN                                             % and save into a list Children
     )
     (append T CDN LIST)                                 % append CDN to the end of the rest of the search list and save into LIST
-    (innerSearch LIST SEARCHED)                         % search again on LIST with updated searched list
+    (innerSearch LIST SEARCHED FG)                       % search again on LIST with updated searched list
+)
+
+% Returns full graph of R
+((fullGraph R FG)
+    (innerSearch (R) () FG)
 )
 
 /* FIND PREDICATES */
@@ -252,6 +281,13 @@ innerSearch will continue to search on <search list> until either the goal is fo
 )
 ((findOrder ATT)                                        % First clause failed completely, so no order found for ATT
     (pp (order not found for ATT))
+    % TODO, to return a list of possible orders, for each order...
+    % get the full graph
+    % if the full graph does not contain a type of ATT, add order to <possibilities>
+    % once through with each order, <possibilities should contain a list of possible orders>
+    
+    % Need to get a predicate to return what type something is and a predicate to search the 
+    % full graph for that type
 )
 
 % Finds the nationality for an ATTribute (ex. which nationality is the [ATT]Snickers owner?)
