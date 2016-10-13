@@ -274,63 +274,203 @@ innerSearch will continue to search on <search list> until either the goal is fo
 
 /* FIND PREDICATES */
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Finds the house order for an ATTribute (ex. which house does the [ATT]Snickers owner live in?)
+% Check if type is Order
+((getType ORD TYPE)
+  (order ORD)
+  (eq TYPE order)
+)
+% Check if type is Nation
+((getType NAT TYPE)
+  (nation NAT)
+  (eq TYPE nation)
+)
+% Check if type is Color
+((getType COL TYPE)
+  (color COL)
+  (eq TYPE color)
+)
+% Check if type is Drink
+((getType BEV TYPE)
+  (drink BEV)
+  (eq TYPE drink)
+)
+% Check if type is Candy
+((getType CAN TYPE)
+  (candy CAN)
+  (eq TYPE candy)
+)
+% Check if type is Pet
+((getType PET TYPE)
+  (pet PET)
+  (eq TYPE pet)
+)
+
+% Returns true if LIST contains an element of TYPE
+((attTypeExists TYPE LIST)
+    (TYPE VAL)                                          % get a value from the TYPE
+    (member VAL LIST)                                   % see if this value exists in LIST
+)
+
+% generate a list of possibilities given a list of attributes
+((possible () _ POS POS))                               % when we are done, save possible list to output variable
+((possible (H | T) ATT POS POSLIST)
+    (fullGraph H FG)                                    % get full graph from H
+    (getType ATT TYPE)                                  % get ATT type
+    (negg attTypeExists TYPE FG)                        % only add H to list if full graph does not contain an element of TYPE
+    (append POS (H) AUX)
+    (possible T ATT AUX POSLIST)                        % continue
+)
+((possible (H | T) ATT POS POSLIST)                     % if previous failed
+    (possible T ATT POS POSLIST)                        % just continue
+)
+    
+/* Finds the answer to a TYPE for a given ATTribute
+(ex. which house does the [ATT]Snickers owner live in?) order
+(ex. which nationality is the [ATT]Snickers owner?) nation
+(ex. what color is the house that the [ATT]Snickers owner lives in?) color
+(ex. what beverage does the [ATT]Snickers owner drink?) drink
+(ex. what candy does the [ATT]Snickers owner eat?) candy
+(ex. what pet does the [ATT]Snickers owner own) pet */
+((puzzleFind ATT _)
+    (negg getType ATT _)
+    (pp (ATT does not exist))
+)
+((puzzleFind ATT TYPE)
+    (TYPE ORD)
+    (search ATT ORD)
+)
+((puzzleFind ATT TYPE)                                 % First clause failed completely, so no TYPE answer found for ATT
+    (findall VAL ((TYPE VAL)) VALS)                    % generate a list of TYPE answers so that we can check for each
+    (possible VALS ATT () POS)
+    (pp (TYPE answer not found for ATT))
+    (pp (possible values are POS))
+)
+
+/* 
+% Returns true if the LIST contains an attribute with the same type as ATT
+((attTypeExists ATT LIST)
+    (order ATT)
+    (order ORD)
+    (member ORD LIST)
+)
+((attTypeExists ATT LIST)
+    (nation ATT)
+    (nation NAT)
+    (member NAT LIST)
+)
+((attTypeExists ATT LIST)
+    (color ATT)
+    (color COL)
+    (member COL LIST)
+)
+((attTypeExists ATT LIST)
+    (drink ATT)
+    (drink BEV)
+    (member BEV LIST)
+)
+((attTypeExists ATT LIST)
+    (candy ATT)
+    (candy CAN)
+    (member CAN LIST)
+)
+((attTypeExists ATT LIST)
+    (pet ATT)
+    (pet PET)
+    (member PET LIST)
+)
+
+% Finds the house order for an ATTribute 
+((findOrder ATT)
+    (attExists ATT)
+    (pp (attribute does not exist))
+)
 ((findOrder ATT)
     (order ORD)
     (search ATT ORD)
 )
 ((findOrder ATT)                                        % First clause failed completely, so no order found for ATT
+    (findall VAL ((order VAL)) VALS)                    % generate a list of orders so that we can check for each order
+    (possible VALS ATT () POS)
     (pp (order not found for ATT))
-    % TODO, to return a list of possible orders, for each order...
-    % get the full graph
-    % if the full graph does not contain a type of ATT, add order to <possibilities>
-    % once through with each order, <possibilities should contain a list of possible orders>
-    
-    % Need to get a predicate to return what type something is and a predicate to search the 
-    % full graph for that type
+    (pp (possible values are POS))
 )
 
-% Finds the nationality for an ATTribute (ex. which nationality is the [ATT]Snickers owner?)
+% Finds the nationality for an ATTribute
+((findNation ATT)
+    (attExists ATT)
+    (pp (attribute does not exist))
+)
 ((findNation ATT)
     (nation NAT)
     (search ATT NAT)
 )
 ((findNation ATT)                                       % First clause failed completely, so no nation found for ATT
+    (findall VAL ((order VAL)) VALS)                    % generate a list of orders so that we can check for each order
+    (possible VALS ATT () POS)
     (pp (nation not found for ATT))
 )
 
-% Finds the house color for an ATTribute (ex. what color is the house that the [ATT]Snickers owner lives in?)
+% Finds the house color for an ATTribute 
+((findColor ATT)
+    (attExists ATT)
+    (pp (attribute does not exist))
+)
 ((findColor ATT)
     (color COL)
     (search ATT COL)
 )
 ((findColor ATT)                                        % First clause failed completely, so no color found for ATT
+    (findall VAL ((order VAL)) VALS)                    % generate a list of orders so that we can check for each order
+    (possible VALS ATT () POS)
     (pp (color not found for ATT))
+    (pp (possible values are POS))
 )
 
-% Finds the beverage for an ATTribute (ex. what beverage does the [ATT]Snickers owner drink?)
+% Finds the beverage for an ATTribute 
+((findDrink ATT)
+    (attExists ATT)
+    (pp (attribute does not exist))
+)
 ((findDrink ATT)
     (drink BEV)
     (search ATT BEV)
 )
 ((findDrink ATT)                                        % First clause failed completely, so no beverage found for ATT
+    (findall VAL ((order VAL)) VALS)                    % generate a list of orders so that we can check for each order
+    (possible VALS ATT () POS)
     (pp (drink not found for ATT))
+    (pp (possible values are POS))
 )
 
-% Finds the candy for an ATTribute (ex. what candy does the [ATT]Snickers owner eat?)
+% Finds the candy for an ATTribute
+((findCandy ATT)
+    (attExists ATT)
+    (pp (attribute does not exist))
+)
 ((findCandy ATT)
     (candy CAN)
     (search ATT CAN)
 )
 ((findCandy ATT)                                        % First clause failed completely, so no candy found for ATT
+    (findall VAL ((order VAL)) VALS)                    % generate a list of orders so that we can check for each order
+    (possible VALS ATT () POS)
     (pp (candy not found for ATT))
+    (pp (possible values are POS))
 )
 
-% Finds the pet for an ATTribute (ex. what pet does the [ATT]Snickers owner own)
+% Finds the pet for an ATTribute 
+((findPet ATT)
+    (attExists ATT)
+    (pp (attribute does not exist))
+)
 ((findPet ATT)
     (pet PET)
     (search ATT PET)
 )
 ((findPet ATT)                                          % First clause failed completely, so no pet found for ATT
+    (findall VAL ((order VAL)) VALS)                    % generate a list of orders so that we can check for each order
+    (possible VALS ATT () POS)
     (pp (pet not found for ATT))
+    (pp (possible values are POS))
 )
+*/
