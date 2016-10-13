@@ -56,41 +56,13 @@ Please turn in your program, along with a sample of runs attached to your progra
 ==============================================================================================================================================
 */
 
-/*PSUEDO CODE
-******************************************
-?((search <dict> <clause> RESULTS))
-	Where <dict> is a dictionary (e.g. color) element to search for
-		TODO: what about general "house"?
-			- use "HOUSE", return all results as a list in house?
-	And <clause> is the search clause (e.g. "in which the Norwegian lives")
-	RESULTS will hold the result(s).
-		IF length == 0, no potential answer was found.
-		IF length == 1, an exact match was found.
-		IF length > 1, multiple matches were found -- display "potential" answer
-		EXCEPT for the general house case (unless we decide that "house" refers to order?)
-
-~
-	
-IF <dict> is a type
-	Search all connections off of <clause> for type dict
-		IF none, return "Nobody ___"
-			OR find inverse of the taken <dict> set, return these possibilities
-		IF one, return answer
-		IF multiple, return "Possibly ___" for all answers
-ELSE
-	Search all connections off of <clause>
-		IF none, return "Nobody ___"
-			OR find inverse of the taken sets, return those as possibilities
-******************************************
-*/
-
-% 
+/* Build Database */
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ((order First))
 ((order Second))
 ((order Third))
 ((order Fourth))
 ((order Fifth))
-%(order NUM)
 
 ((nation Englishman))
 ((nation Spaniard))
@@ -120,24 +92,34 @@ ELSE
 ((pet Snails))
 ((pet Horse))
 
-%%%%%%%%%% Set up known connections %%%%%%%%%%%
+/* Set up known connections */
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%%%%%%%%%%%%%%%% TODO Missing predicates %%%%%%%%%%%%%%%%
 ((connect Englishman Red))
 ((connect Spaniard Dog))
 ((connect Norwegian First))
+% Green house is immediately right of ivory
+% Hershey-bars dude lives next to fox guy
 ((connect Kit-Kats Yellow))
+% Norwegian lives next to blue
 ((connect Smarties Snails))
 ((connect Snickers OrangeJuice))
 ((connect Ukrainian Tea))
 ((connect Japanese Milky-Ways))
+% Kit-Kats dude is next to horse guy
 ((connect Milk Third))
 
-% 
+/* AUX MEMBERS */
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+((append () L L))
+((append (H|T) L2 (H|L))(append T L2 L))
+
+((member H (H|_)))
+((member X (H|T))(member X T))
+
 ((connected A B)(connect A B))
 ((connected A B)(connect B A))
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 ((left First Second))
 ((left Second Third))
@@ -170,29 +152,66 @@ ELSE
 
 ?((makeconnect))
 
-/*
-% Search for all results related to CLAUSE
-((search CLAUSE)
+/*PSUEDO CODE FOR TALOR SEARCH
+******************************************
+?((search <dict> <clause> RESULTS))
+	Where <dict> is a dictionary (e.g. color) element to search for
+		TODO: what about general "house"?
+			- use "HOUSE", return all results as a list in house?
+	And <clause> is the search clause (e.g. "in which the Norwegian lives")
+	RESULTS will hold the result(s).
+		IF length == 0, no potential answer was found.
+		IF length == 1, an exact match was found.
+		IF length > 1, multiple matches were found -- display "potential" answer
+		EXCEPT for the general house case (unless we decide that "house" refers to order?)
+
+~
 	
-)
-
-% Filter search result by TYPE
-((search TYPE CLAUSE)
-
-)
-
-((search (H|T))
-	%(pp H)
-	%(pp T)
-	(connect H OBJ)
-	(negg member OBJ (H|T))
-	(pp OBJ)
-	(search (H|(OBJ|T)))
-)
-((search (  | ( H | T )))
- 
-)
+IF <dict> is a type
+	Search all connections off of <clause> for type dict
+		IF none, return "Nobody ___"
+			OR find inverse of the taken <dict> set, return these possibilities
+		IF one, return answer
+		IF multiple, return "Possibly ___" for all answers
+ELSE
+	Search all connections off of <clause>
+		IF none, return "Nobody ___"
+			OR find inverse of the taken sets, return those as possibilities
+******************************************
 */
+
+/* SEARCH PREDICATES */
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+/*PSUEDO CODE FOR KENDRICK SEARCH
+******************************************
+((search <root> <goal>))
+    Begins a search where root is the root starting attribute string and goal is the goal attribute string
+    Create a ((goal <goal>)) clause
+    Begin the innerSearch with (<root>) as the first element to search
+    IF innerSearch FAILS
+        We could not find the goal
+        Cleanup and fail
+    ELSE
+        Goal was found and printed
+        Cleanup
+    
+(innerSearch <search list> <searched list>)
+    IF <search list> is empty, we have gone through the entire map and we were not able to find the goal
+        Stop further execution
+        // We can print out <searched list> at this point in time to see the entire graph we have searched on
+        Fail the clause
+    ELSE IF goal is the head of <search list>
+        Goal is connected to Root so they are connected!
+        Print goal and succeed (search will stop because we succeeded)
+    ELSE
+        Remove the head of <search list> <head> and append it to the <searched list>
+        Append all children of <head> that hasn't been searched (does not exist in <searched list>) into search list
+        Search on <search list> again
+        
+innerSearch will continue to search on <search list> until either the goal is found or if there are no more nodes to search on
+
+******************************************/
 
 ((search R G)                                           % Begin search on Root to Goal
     (kill goal)
@@ -201,11 +220,12 @@ ELSE
     (delcl ((goal G)))                                  % cleanup
 )
 ((search _ _)                                           % If first clause failed, we didn't find anything
-    (pp (did not find goal))
+    %(pp (did not find goal))
     (delcl ((goal G)))                                  % cleanup
+    (fail)
 )
 
-((innerSearch () _)                                     % If the search list is empty, we didn't find anything
+((innerSearch () FG)                                    % If the search list is empty, we didn't find anything
     (!)                                                 % cut and fail
     (fail)
 )
@@ -213,19 +233,68 @@ ELSE
     (goal H)
     (pp H)
 )
-((innerSearch (H | T) SEARCHED)                         % We checked H and it's not the goal,
-    (append (H) SEARCHED FG)                            % so append H to the top of SEARCHED and save into FullGraph
+((innerSearch (H | T) FG)                               % We checked H and it's not the goal,
+    (append (H) FG SEARCHED)                            % so append H to the top of FullGraph and save into SEARCHED
     (findall CHD                                        % Find all Child,
-        ((connected H CHD)(negg member CHD FG))         % that is connected to H and not searched before,
+        ((connected H CHD)(negg member CHD SEARCHED))   % that is connected to H and not searched before,
         CDN                                             % and save into a list Children
     )
     (append T CDN LIST)                                 % append CDN to the end of the rest of the search list and save into LIST
-    (innerSearch LIST FG)                               % search again on LIST with updated searched list
+    (innerSearch LIST SEARCHED)                         % search again on LIST with updated searched list
 )
 
-/* AUX MEMBERS */
-((append () L L))
-((append (H|T) L2 (H|L))(append T L2 L))
+/* FIND PREDICATES */
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Finds the house order for an ATTribute (ex. which house does the [ATT]Snickers owner live in?)
+((findOrder ATT)
+    (order ORD)
+    (search ATT ORD)
+)
+((findOrder ATT)                                        % First clause failed completely, so no order found for ATT
+    (pp (order not found for ATT))
+)
 
-((member H (H|_)))
-((member X (H|T))(member X T))
+% Finds the nationality for an ATTribute (ex. which nationality is the [ATT]Snickers owner?)
+((findNation ATT)
+    (nation NAT)
+    (search ATT NAT)
+)
+((findNation ATT)                                       % First clause failed completely, so no nation found for ATT
+    (pp (nation not found for ATT))
+)
+
+% Finds the house color for an ATTribute (ex. what color is the house that the [ATT]Snickers owner lives in?)
+((findColor ATT)
+    (color COL)
+    (search ATT COL)
+)
+((findColor ATT)                                        % First clause failed completely, so no color found for ATT
+    (pp (color not found for ATT))
+)
+
+% Finds the beverage for an ATTribute (ex. what beverage does the [ATT]Snickers owner drink?)
+((findDrink ATT)
+    (drink BEV)
+    (search ATT BEV)
+)
+((findDrink ATT)                                        % First clause failed completely, so no beverage found for ATT
+    (pp (drink not found for ATT))
+)
+
+% Finds the candy for an ATTribute (ex. what candy does the [ATT]Snickers owner eat?)
+((findCandy ATT)
+    (candy CAN)
+    (search ATT CAN)
+)
+((findCandy ATT)                                        % First clause failed completely, so no candy found for ATT
+    (pp (candy not found for ATT))
+)
+
+% Finds the pet for an ATTribute (ex. what pet does the [ATT]Snickers owner own)
+((findPet ATT)
+    (pet PET)
+    (search ATT PET)
+)
+((findPet ATT)                                          % First clause failed completely, so no pet found for ATT
+    (pp (pet not found for ATT))
+)
