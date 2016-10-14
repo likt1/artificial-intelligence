@@ -1,4 +1,13 @@
 /*
+$$$$$$$$\          $$\                          
+\____$$  |         $$ |                         
+    $$  / $$$$$$\  $$$$$$$\   $$$$$$\  $$$$$$\  
+   $$  / $$  __$$\ $$  __$$\ $$  __$$\ \____$$\ 
+  $$  /  $$$$$$$$ |$$ |  $$ |$$ |  \__|$$$$$$$ |
+ $$  /   $$   ____|$$ |  $$ |$$ |     $$  __$$ |
+$$$$$$$$\\$$$$$$$\ $$$$$$$  |$$ |     \$$$$$$$ |
+\________|\_______|\_______/ \__|      \_______|
+
 Authors:
     Foertmeyer, Thomas
     Li, Kendrick
@@ -109,28 +118,22 @@ Please turn in your program, along with a sample of runs attached to your progra
 ((relation Kit-Kats Horse adjacent))
 ((relation Hershey-bars Fox adjacent))
 
-/* TODO need to generate these logically.  I generated these manually */
-% Norwegian lives next to blue
-    % since Norwegian is first, the only guy next to first is second
-%((connect Blue Second))
-
 ((makeconnect1)
    (findOrder Blue ORD)
-   (pp ORD)
+   %(pp ORD)
    (adjacent ORD ADJ)
-   (pp ADJ)
+   %(pp ADJ)
    (addcl ((maybeconnect Norwegian ADJ)))
    (fail)   %hit both sides, if applicable
 )
 ((makeconnect1)
    (findOrder Norwegian ORD)
-   (pp ORD)
+   %(pp ORD)
    (adjacent ORD ADJ)
-   (pp ADJ)
+   %(pp ADJ)
    (addcl ((maybeconnect Blue ADJ)))
    (fail)
 )
-
 
 % Green house is immediately right of ivory
     % (Y B ((R I G) or (I G R))
@@ -276,7 +279,9 @@ Please turn in your program, along with a sample of runs attached to your progra
    (makeconnects)
 )
 
-/*PSUEDO CODE FOR TALOR SEARCH
+?((dynamicPopulation))
+
+/*PSUEDO CODE FOR TAYLOR SEARCH
 ******************************************
 ?((search <dict> <clause> RESULTS))
 	Where <dict> is a dictionary (e.g. color) element to search for
@@ -288,7 +293,6 @@ Please turn in your program, along with a sample of runs attached to your progra
 		IF length == 1, an exact match was found.
 		IF length > 1, multiple matches were found -- display "potential" answer
 		EXCEPT for the general house case (unless we decide that "house" refers to order?)
-
 ~
 	
 IF <dict> is a type
@@ -447,3 +451,50 @@ ex call: ?((puzzleFind Snickers nation))
     (pp (TYPE answer not found for ATT))
     (pp (possible values are POS))
 )
+
+/* Sample Queries and output
+
+    reload FoertmeyerLiOkelAss3.frl
+
+    What does the Ukranian drink?
+    ?((puzzleFind Ukrainian drink))
+    Tea
+
+    Where is the person in the yellow house from?
+    ?((puzzleFind Yellow nation))
+    Norwegian
+
+    What candy does the Spaniard eat?
+    ?((puzzleFind Spaniard candy))
+    (candy answer not found for Spaniard)
+    (possible values are (Smarties Snicker Hershey-bars))
+
+    What does the person who eats Kit-Kats drink?
+    ?((puzzleFind Kit-Kats drink))
+    (drink answer not found for Kit-Kats)
+    ((possible values are (Milk Tea Coffee)))
+
+    In which house does the person who likes orange juice live?
+    ?((puzzleFind OrangeJuice order))
+    (order answer not found for OrangeJuice)
+    ((possible values are (First Second Fourth Fifth)))
+
+    Who lives in the green house?
+    ?((puzzleFind Green nation))
+    (nation answer not found for Green)
+    (possible values are (Spaniard Ukrainian Japanese))
+
+    Tell me everything that is known about the Norweigan's hosue
+    ?((fullGraph Norwegian X)(pp X))
+    (Kit-kats Yellow First Norwegian)
+
+    Tell me everything that is known about the Green House
+    ?((fullGraph Green X)(pp X))
+    Coffee Green
+
+    Tell me everything that is known about the second house
+    ?((fullGraph Second X)(pp X))
+    (Blue Horse Second)
+
+
+*/
