@@ -1,3 +1,5 @@
+% This is a dummy file used because I got tired of typing reload AsdfhEshdiCasdhAss3.frl in all the time
+
 /*
 Authors:
     Foertmeyer, Thomas
@@ -54,7 +56,197 @@ Please turn in your program, along with a sample of runs attached to your progra
 ==============================================================================================================================================
 */
 
-/*PSUEDO CODE
+/* Build Database */
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+((order First))
+((order Second))
+((order Third))
+((order Fourth))
+((order Fifth))
+
+((nation Englishman))
+((nation Spaniard))
+((nation Norwegian))
+((nation Ukrainian))
+((nation Japanese))
+
+((color Red))
+((color Yellow))
+((color Green))
+((color Ivory))
+((color Blue))
+
+((drink Milk))
+((drink OrangeJuice))
+((drink Tea))
+((drink Coffee))
+
+((candy Kit-Kats))
+((candy Smarties))
+((candy Snickers))
+((candy Hershey-bars))
+((candy Milky-Ways))
+
+((pet Fox))
+((pet Dog))
+((pet Snails))
+((pet Horse))
+
+/* Set up known connections */
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+((connect Englishman Red))
+((connect Spaniard Dog))
+((connect Norwegian First))
+((connect Ukrainian Tea))
+((connect Japanese Milky-Ways))
+((connect Kit-Kats Yellow))
+((connect Smarties Snails))
+((connect Snickers OrangeJuice))
+((connect Milk Third))
+((connect Green Coffee))
+
+((relation Norwegian Blue adjacent))
+((relation Green Ivory right))
+((relation Kit-Kats Horse adjacent))
+((relation Hershey-bars Fox adjacent))
+
+/* TODO need to generate these logically.  I generated these manually */
+% Norwegian lives next to blue
+    % since Norwegian is first, the only guy next to first is second
+%((connect Blue Second))
+
+((makeconnect1)
+   (findOrder Blue ORD)
+   (pp ORD)
+   (adjacent ORD ADJ)
+   (pp ADJ)
+   (addcl ((maybeconnect Norwegian ADJ)))
+   (fail)   %hit both sides, if applicable
+)
+((makeconnect1)
+   (findOrder Norwegian ORD)
+   (pp ORD)
+   (adjacent ORD ADJ)
+   (pp ADJ)
+   (addcl ((maybeconnect Blue ADJ)))
+   (fail)
+)
+
+
+% Green house is immediately right of ivory
+    % (Y B ((R I G) or (I G R))
+    % since Norwegian is first, he can't be Red (Englishman), Blue (Second), Green (Ivory can't be on left), or Ivory (right is Blue)
+((connect Norwegian Yellow))
+((makeconnect2)
+   (findOrder Ivory ORD)
+   (order ORD)
+   (right ORD RIGHT)
+   (addcl ((connect RIGHT Green)))
+)
+((makeconnect2)
+   (findOrder Green ORD)
+   (order ORD)
+   (left ORD LEFT)
+   (addcl ((connect RIGHT Ivory)))
+)
+
+% Kit-Kats dude is next to horse guy
+    % Norwegian is Yellow now, so he eats Kit-Kats, which means horse must be Second
+%((connect Horse Second))
+((makeconnect3)
+   (findOrder Kit-Kats ORD)
+   (order ORD)
+   (adjacent ORD ADJ)
+   (addcl ((maybeconnect ADJ Horse)))
+   (fail)
+)
+((makeconnect3)
+   (findOrder Horse ORD)
+   (order ORD)
+   (adjacent ORD ADJ)
+   (addcl ((maybeconnect ADJ Kit-Kats)))
+   (fail)
+)
+
+% Hershey-bars dude lives next to fox guy
+    % IDK
+((makeconnect4)
+   (findOrder Hershey-bars ORD)
+   (order ORD)
+   (adjacent ORD ADJ)
+   (addcl ((maybeconnect ADJ Fox)))
+   (fail)
+)
+((makeconnect4)
+   (findOrder Fox ORD)
+   (order ORD)
+   (adjacent ORD ADJ)
+   (addcl ((maybeconnect ADJ Hershey-bars)))
+   (fail)
+)
+    
+((makeconnects)
+   % Find maybeconnect pair
+   (maybeconnect A B)
+   
+   (negg connected A B)
+   
+   %generate types
+   (getType A TYPEA)
+   (getType B TYPEB)
+   
+   %Determine if a pre-existing connection of this type has been made
+   (negg findType A TYPEB)
+   (negg findType B TYPEA)
+   
+   %Delete this maybeconnect and make a full connect.
+   (delcl ((maybeconnect A B)) ) 
+   (addcl ((connect A B)) ) 
+   
+   (fail)
+)
+((makeconnects)
+   (connected A B)
+   (delcl (((maybeconnect A B))) )
+)
+
+
+
+/* AUX MEMBERS */
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+((append () L L))
+((append (H|T) L2 (H|L))(append T L2 L))
+
+((member H (H|_)))
+((member X (H|T))(member X T))
+
+((connected A B)(connect A B))
+((connected A B)(connect B A))
+%((connected A B)(search A B))
+
+((left First Second))
+((left Second Third))
+((left Third Fourth))
+((left Fourth Fifth))
+
+((right A B)(left B A))
+
+((adjacent A B)(left A B))
+((adjacent A B)(right A B))
+
+((between A B C)
+    (left A C)
+    (right B C)
+)
+((between A B C)
+    (left B C)
+    (right A C)
+)
+
+?((makeconnect))
+
+/*PSUEDO CODE FOR TALOR SEARCH
 ******************************************
 ?((search <dict> <clause> RESULTS))
 	Where <dict> is a dictionary (e.g. color) element to search for
@@ -82,160 +274,290 @@ ELSE
 ******************************************
 */
 
-% 
-((order First))
-((order Second))
-((order Third))
-((order Fourth))
-((order Fifth))
-%(order NUM)
-
-((nation Englishman))
-((nation Spaniard))
-((nation Norwegian))
-((nation Ukrainian))
-((nation Japanese))
-
-((color Red))
-((color Yellow))
-((color Green))
-((color Ivory))
-((color blue))
-
-((drink Milk))
-((drink OrangeJuice))
-((drink Tea))
-((drink Coffee))
-
-((candy Kit-Kats))
-((candy Smarties))
-((candy Snickers))
-((candy Hershey-bars))
-((candy Milky-Ways))
-
-((pet Fox))
-((pet Dog))
-((pet Snails))
-((pet Horse))
-
-%%%%%%%%%% Set up known connections %%%%%%%%%%%
-
-((connect Englishman Red))
-((connect Spaniard Dog))
-((connect Norwegian First))
-((connect Kit-Kats Yellow))
-((connect Smarties Snails))
-((connect Snickers OrangeJuice))
-((connect Ukrainian Tea))
-((connect Japanese Milky-Ways))
-((connect Milk Third))
-
-% 
-((connected A B)(connect A B))
-((connected A B)(connect B A))
-
-
+/* SEARCH PREDICATES */
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-((left First Second))
-((left Second Third))
-((left Third Fourth))
-((left Fourth Fifth))
+/*PSUEDO CODE FOR KENDRICK SEARCH
+******************************************
+((search <root> <goal>))
+    Begins a search where root is the root starting attribute string and goal is the goal attribute string
+    Create a ((goal <goal>)) clause
+    Begin the innerSearch with (<root>) as the first element to search
+    IF innerSearch FAILS
+        We could not find the goal
+        Cleanup and fail
+    ELSE
+        Goal was found and printed
+        Cleanup
+    
+(innerSearch <search list> <searched list> <full graph>)
+    IF <search list> is empty, we have gone through the entire map and we were not able to find the goal
+        Stop further execution
+        Save <full graph> as <searched list>
+        Fail the clause
+    ELSE IF goal is the head of <search list>
+        Goal is connected to Root so they are connected!
+        Print goal and succeed (search will stop because we succeeded)
+    ELSE
+        Remove the head of <search list> <head> and append it to the <searched list>
+        Append all children of <head> that hasn't been searched (does not exist in <searched list>) into search list
+        Search on <search list> again
+        
+innerSearch will continue to search on <search list> until either the goal is found or if there are no more nodes to search on
 
-((right A B)(left B A))
-
-((adjacent A B)(left A B))
-((adjacent A B)(right A B))
-
-% Fit into variables
-((makeconnect)
-	(connected B 'Ivory')
-	(right A B)
-	(addcl ((connect Green A)))
-	(!)
-	(fail) % send into subsequent makeconnect clauses
-)
-((makeconnect )
-	(connected Fox NUM)
-	(order NUM)
-	(adjacent NUM TARGET)
-	(connect TARGET CANDY)
-	(negg candy CANDY)
-	(addcl ((connect Hershey-bars B)))
-	(!)
-	(fail)
-)
-
-?((makeconnect))
-
-/* member aux at bottom
-((member OBJ ())
-	(!)
-	(fail)
-)
-((member OBJ (H|T))
-	(eq OBJ H)
-)
-((member OBJ (H|T))
-	(member OBJ T)
-)
-
-% Search for all results related to CLAUSE
-((search CLAUSE)
-	
-)
-
-% Filter search result by TYPE
-((search TYPE CLAUSE)
-
-)
-
-((search (H|T))
-	%(pp H)
-	%(pp T)
-	(connect H OBJ)
-	(negg member OBJ (H|T))
-	(pp OBJ)
-	(search (H|(OBJ|T)))
-)
-((search (  | ( H | T )))
- 
-)
-*/
-
+******************************************/
 
 ((search R G)                                           % Begin search on Root to Goal
     (kill goal)
     (addcl ((goal G)))
-    (innerSearch (R) ())                                % run inner search function, we fail if search list is empty
+    (innerSearch (R) () FG)                             % run inner search function
+    (var FG)                                            % if FG is uninit, that means that we didn't fail 
     (delcl ((goal G)))                                  % cleanup
 )
 ((search _ _)                                           % If first clause failed, we didn't find anything
-    (pp (did not find goal))
+    %(pp (did not find goal))
     (delcl ((goal G)))                                  % cleanup
-)
-
-((innerSearch () _)                                     % If the search list is empty, we didn't find anything
-    (!)                                                 % cut and fail
     (fail)
 )
-((innerSearch (H | _) _)                                % If the head is the goal, print goal and exit
+
+((innerSearch () FG FG)                                 % If the search list is empty, we didn't find anything
+    (!)                                                 % cut and assign the full graph to the full graph var on right
+)
+((innerSearch (H | _) _ _)                              % If the head is the goal, print goal and exit
     (goal H)
     (pp H)
 )
-((innerSearch (H | T) FG)                               % We checked H and it's not the goal,
-    (append (H) FG SEARCHED)                            % so append H to the top of FullGraph and save into SEARCHED
+((innerSearch (H | T) SL FG)                            % We checked H and it's not the goal,
+    (append (H) SL SEARCHED)                            % so append H to the top of FullGraph and save into SEARCHED
     (findall CHD                                        % Find all Child,
         ((connected H CHD)(negg member CHD SEARCHED))   % that is connected to H and not searched before,
         CDN                                             % and save into a list Children
     )
     (append T CDN LIST)                                 % append CDN to the end of the rest of the search list and save into LIST
-    (innerSearch LIST SEARCHED)                         % search again on LIST with updated searched list
+    (innerSearch LIST SEARCHED FG)                       % search again on LIST with updated searched list
 )
 
-/* AUX MEMBERS */
-((append () L L))
-((append (H|T) L2 (H|L))(append T L2 L))
+% Returns full graph of R
+((fullGraph R FG)
+    (innerSearch (R) () FG)
+)
 
-((member H (H|_)))
-((member X (H|T))(member X T))
+/* FIND PREDICATES */
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Check if type is Order
+((getType ORD TYPE)
+  (order ORD)
+  (eq TYPE order)
+)
+% Check if type is Nation
+((getType NAT TYPE)
+  (nation NAT)
+  (eq TYPE nation)
+)
+% Check if type is Color
+((getType COL TYPE)
+  (color COL)
+  (eq TYPE color)
+)
+% Check if type is Drink
+((getType BEV TYPE)
+  (drink BEV)
+  (eq TYPE drink)
+)
+% Check if type is Candy
+((getType CAN TYPE)
+  (candy CAN)
+  (eq TYPE candy)
+)
+% Check if type is Pet
+((getType PET TYPE)
+  (pet PET)
+  (eq TYPE pet)
+)
+
+% Returns true if LIST contains an element of TYPE
+((attTypeExists TYPE LIST)
+    (TYPE VAL)                                          % get a value from the TYPE
+    (member VAL LIST)                                   % see if this value exists in LIST
+)
+
+% generate a list of possibilities given a list of attributes
+((possible () _ POS POS))                               % when we are done, save possible list to output variable
+((possible (H | T) ATT POS POSLIST)
+    (fullGraph H FG)                                    % get full graph from H
+    (getType ATT TYPE)                                  % get ATT type
+    (negg attTypeExists TYPE FG)                        % only add H to list if full graph does not contain an element of TYPE
+    (append POS (H) AUX)
+    (possible T ATT AUX POSLIST)                        % continue
+)
+((possible (H | T) ATT POS POSLIST)                     % if previous failed
+    (possible T ATT POS POSLIST)                        % just continue
+)
+    
+/* Finds the answer to a TYPE for a given ATTribute
+(ex. which house does the [ATT]Snickers owner live in?) order
+(ex. which nationality is the [ATT]Snickers owner?) nation
+(ex. what color is the house that the [ATT]Snickers owner lives in?) color
+(ex. what beverage does the [ATT]Snickers owner drink?) drink
+(ex. what candy does the [ATT]Snickers owner eat?) candy
+(ex. what pet does the [ATT]Snickers owner own) pet */
+((puzzleFind ATT _)
+    (negg getType ATT _)
+    (pp (ATT does not exist))
+)
+((puzzleFind ATT TYPE)
+    (TYPE ORD)
+    (search ATT ORD)
+)
+((puzzleFind ATT TYPE)                                 % First clause failed completely, so no TYPE answer found for ATT
+    (findall VAL ((TYPE VAL)) VALS)                    % generate a list of TYPE answers so that we can check for each
+    (possible VALS ATT () POS)
+    (pp (TYPE answer not found for ATT))
+    (pp (possible values are POS))
+)
+
+
+% Returns true if the LIST contains an attribute with the same type as ATT
+((attTypeExists ATT LIST)
+    (order ATT)
+    (order ORD)
+    (member ORD LIST)
+)
+((attTypeExists ATT LIST)
+    (nation ATT)
+    (nation NAT)
+    (member NAT LIST)
+)
+((attTypeExists ATT LIST)
+    (color ATT)
+    (color COL)
+    (member COL LIST)
+)
+((attTypeExists ATT LIST)
+    (drink ATT)
+    (drink BEV)
+    (member BEV LIST)
+)
+((attTypeExists ATT LIST)
+    (candy ATT)
+    (candy CAN)
+    (member CAN LIST)
+)
+((attTypeExists ATT LIST)
+    (pet ATT)
+    (pet PET)
+    (member PET LIST)
+)
+
+% Finds the house order for an ATTribute 
+((findOrder ATT)
+    (attExists ATT)
+    (pp (attribute does not exist))
+)
+((findOrder ATT)
+    (order ORD)
+    (search ATT ORD)
+)
+((findOrder ATT)                                        % First clause failed completely, so no order found for ATT
+    (findall VAL ((order VAL)) VALS)                    % generate a list of orders so that we can check for each order
+    (possible VALS ATT () POS)
+    (pp (order not found for ATT))
+    (pp (possible values are POS))
+)
+
+((findOrder ATT _)
+    (attExists ATT)
+    (pp (attribute does not exist))
+)
+((findOrder ATT ORD)
+    (order ORD)
+    (search ATT ORD)
+)
+
+% Finds the nationality for an ATTribute
+((findNation ATT)
+    (attExists ATT)
+    (pp (attribute does not exist))
+)
+((findNation ATT)
+    (nation NAT)
+    (search ATT NAT)
+)
+((findNation ATT)                                       % First clause failed completely, so no nation found for ATT
+    (findall VAL ((order VAL)) VALS)                    % generate a list of orders so that we can check for each order
+    (possible VALS ATT () POS)
+    (pp (nation not found for ATT))
+)
+
+% Finds the house color for an ATTribute 
+((findColor ATT)
+    (attExists ATT)
+    (pp (attribute does not exist))
+)
+((findColor ATT)
+    (color COL)
+    (search ATT COL)
+)
+((findColor ATT)                                        % First clause failed completely, so no color found for ATT
+    (findall VAL ((order VAL)) VALS)                    % generate a list of orders so that we can check for each order
+    (possible VALS ATT () POS)
+    (pp (color not found for ATT))
+    (pp (possible values are POS))
+)
+
+% Finds the beverage for an ATTribute 
+((findDrink ATT)
+    (attExists ATT)
+    (pp (attribute does not exist))
+)
+((findDrink ATT)
+    (drink BEV)
+    (search ATT BEV)
+)
+((findDrink ATT)                                        % First clause failed completely, so no beverage found for ATT
+    (findall VAL ((order VAL)) VALS)                    % generate a list of orders so that we can check for each order
+    (possible VALS ATT () POS)
+    (pp (drink not found for ATT))
+    (pp (possible values are POS))
+)
+
+% Finds the candy for an ATTribute
+((findCandy ATT)
+    (attExists ATT)
+    (pp (attribute does not exist))
+)
+((findCandy ATT)
+    (candy CAN)
+    (search ATT CAN)
+)
+((findCandy ATT)                                        % First clause failed completely, so no candy found for ATT
+    (findall VAL ((order VAL)) VALS)                    % generate a list of orders so that we can check for each order
+    (possible VALS ATT () POS)
+    (pp (candy not found for ATT))
+    (pp (possible values are POS))
+)
+
+% Finds the pet for an ATTribute 
+((findPet ATT)
+    (attExists ATT)
+    (pp (attribute does not exist))
+)
+((findPet ATT)
+    (pet PET)
+    (search ATT PET)
+)
+((findPet ATT)                                          % First clause failed completely, so no pet found for ATT
+    (findall VAL ((order VAL)) VALS)                    % generate a list of orders so that we can check for each order
+    (possible VALS ATT () POS)
+    (pp (pet not found for ATT))
+    (pp (possible values are POS))
+)
+
+((findType ATT TYPE)
+    (TYPE RESULT)
+    (search ATT RESULT)
+)
+((findType ATT TYPE RESULT)
+    (TYPE RESULT)
+    (search ATT RESULT)
+)
