@@ -18,13 +18,10 @@ Date:
 
 /*
 Description:
-    A knowledge constraint problem. Consider the following logic puzzle:
-        In five houses, each of a different color, live five persons, each of a different 
-        nationality, each of whom prefers a different brand of candy, a different kind of pet,
-        and a different drink.
+    A knowledge constraint problem inspired by the Zebra puzzle published in Life International in 1962.
 */
 
-/* SUMMARY
+/* PROBLEM STATEMENT
 =============================================================================================================================================
  In five houses, each of a different color, live five persons, each of a different 
  nationality, each of whom prefers a different brand of candy, a different kind of pet,
@@ -63,7 +60,7 @@ Please turn in your program, along with a sample of runs attached to your progra
 ==============================================================================================================================================
 */
 
-/* Build Database */
+/* BUILD DATABASE */
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ((order First))
 ((order Second))
@@ -99,7 +96,7 @@ Please turn in your program, along with a sample of runs attached to your progra
 ((pet Snails))
 ((pet Horse))
 
-/* Set up known connections */
+/* SET UP KNOWN CONNECTIONS */
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 ((connect Englishman Red))
@@ -452,7 +449,8 @@ ex call: ?((puzzleFind Snickers nation))
     (pp (possible values are POS))
 )
 
-/* Sample Queries and output
+/* SAMPLE QUERIES AND OUTPUT
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     reload FoertmeyerLiOkelAss3.frl
 
