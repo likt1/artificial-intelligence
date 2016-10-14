@@ -242,23 +242,6 @@ Please turn in your program, along with a sample of runs attached to your progra
     (right A C)
 )
 
-
-% Finds the house order for an ATTribute 
-((findOrder ATT)
-    (attExists ATT)
-    (pp (attribute does not exist))
-)
-((findOrder ATT)
-    (order ORD)
-    (search ATT ORD)
-)
-((findOrder ATT)                                        % First clause failed completely, so no order found for ATT
-    (findall VAL ((order VAL)) VALS)                    % generate a list of orders so that we can check for each order
-    (possible VALS ATT () POS)
-    (pp (order not found for ATT))
-    (pp (possible values are POS))
-)
-
 ((findOrder ATT _)
     (attExists ATT)
     (pp (attribute does not exist))
@@ -266,85 +249,6 @@ Please turn in your program, along with a sample of runs attached to your progra
 ((findOrder ATT ORD)
     (order ORD)
     (search ATT ORD)
-)
-
-% Finds the nationality for an ATTribute
-((findNation ATT)
-    (attExists ATT)
-    (pp (attribute does not exist))
-)
-((findNation ATT)
-    (nation NAT)
-    (search ATT NAT)
-)
-((findNation ATT)                                       % First clause failed completely, so no nation found for ATT
-    (findall VAL ((order VAL)) VALS)                    % generate a list of orders so that we can check for each order
-    (possible VALS ATT () POS)
-    (pp (nation not found for ATT))
-)
-
-% Finds the house color for an ATTribute 
-((findColor ATT)
-    (attExists ATT)
-    (pp (attribute does not exist))
-)
-((findColor ATT)
-    (color COL)
-    (search ATT COL)
-)
-((findColor ATT)                                        % First clause failed completely, so no color found for ATT
-    (findall VAL ((order VAL)) VALS)                    % generate a list of orders so that we can check for each order
-    (possible VALS ATT () POS)
-    (pp (color not found for ATT))
-    (pp (possible values are POS))
-)
-
-% Finds the beverage for an ATTribute 
-((findDrink ATT)
-    (attExists ATT)
-    (pp (attribute does not exist))
-)
-((findDrink ATT)
-    (drink BEV)
-    (search ATT BEV)
-)
-((findDrink ATT)                                        % First clause failed completely, so no beverage found for ATT
-    (findall VAL ((order VAL)) VALS)                    % generate a list of orders so that we can check for each order
-    (possible VALS ATT () POS)
-    (pp (drink not found for ATT))
-    (pp (possible values are POS))
-)
-
-% Finds the candy for an ATTribute
-((findCandy ATT)
-    (attExists ATT)
-    (pp (attribute does not exist))
-)
-((findCandy ATT)
-    (candy CAN)
-    (search ATT CAN)
-)
-((findCandy ATT)                                        % First clause failed completely, so no candy found for ATT
-    (findall VAL ((order VAL)) VALS)                    % generate a list of orders so that we can check for each order
-    (possible VALS ATT () POS)
-    (pp (candy not found for ATT))
-    (pp (possible values are POS))
-)
-
-% Finds the pet for an ATTribute 
-((findPet ATT)
-    (attExists ATT)
-    (pp (attribute does not exist))
-)
-((findPet ATT)
-    (pet PET)
-    (search ATT PET)
-)
-((findPet ATT)                                          % First clause failed completely, so no pet found for ATT
-    (findall VAL ((order VAL)) VALS)                    % generate a list of orders so that we can check for each order
-    (possible VALS ATT () POS)
-    (pp (pet not found for ATT))
-    (pp (possible values are POS))
 )
 
 ((findType ATT TYPE)
@@ -526,7 +430,9 @@ innerSearch will continue to search on <search list> until either the goal is fo
 (ex. what color is the house that the [ATT]Snickers owner lives in?) color
 (ex. what beverage does the [ATT]Snickers owner drink?) drink
 (ex. what candy does the [ATT]Snickers owner eat?) candy
-(ex. what pet does the [ATT]Snickers owner own) pet */
+(ex. what pet does the [ATT]Snickers owner own) pet 
+ex call: ?((puzzleFind Snickers nation))
+*/
 ((puzzleFind ATT _)
     (negg getType ATT _)
     (pp (ATT does not exist))
