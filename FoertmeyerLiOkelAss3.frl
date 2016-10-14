@@ -369,7 +369,7 @@ Please turn in your program, along with a sample of runs attached to your progra
    (makeconnect4)(fail)
 )
 ((dynamicPopulation)
-   (makeconnects)(fail)
+   (makeconnects)
 )
 
 /*PSUEDO CODE FOR TALOR SEARCH
