@@ -1,4 +1,13 @@
 /*
+$$$$$$$$\          $$\                          
+\____$$  |         $$ |                         
+    $$  / $$$$$$\  $$$$$$$\   $$$$$$\  $$$$$$\  
+   $$  / $$  __$$\ $$  __$$\ $$  __$$\ \____$$\ 
+  $$  /  $$$$$$$$ |$$ |  $$ |$$ |  \__|$$$$$$$ |
+ $$  /   $$   ____|$$ |  $$ |$$ |     $$  __$$ |
+$$$$$$$$\\$$$$$$$\ $$$$$$$  |$$ |     \$$$$$$$ |
+\________|\_______|\_______/ \__|      \_______|
+
 Authors:
     Foertmeyer, Thomas
     Li, Kendrick
@@ -9,13 +18,10 @@ Date:
 
 /*
 Description:
-    A knowledge constraint problem. Consider the following logic puzzle:
-        In five houses, each of a different color, live five persons, each of a different 
-        nationality, each of whom prefers a different brand of candy, a different kind of pet,
-        and a different drink.
+    A knowledge constraint problem inspired by the Zebra puzzle published in Life International in 1962.
 */
 
-/* SUMMARY
+/* PROBLEM STATEMENT
 =============================================================================================================================================
  In five houses, each of a different color, live five persons, each of a different 
  nationality, each of whom prefers a different brand of candy, a different kind of pet,
@@ -54,7 +60,7 @@ Please turn in your program, along with a sample of runs attached to your progra
 ==============================================================================================================================================
 */
 
-/* Build Database */
+/* BUILD DATABASE */
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 ((order First))
 ((order Second))
@@ -90,7 +96,7 @@ Please turn in your program, along with a sample of runs attached to your progra
 ((pet Snails))
 ((pet Horse))
 
-/* Set up known connections */
+/* SET UP KNOWN CONNECTIONS */
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 ((connect Englishman Red))
@@ -109,28 +115,22 @@ Please turn in your program, along with a sample of runs attached to your progra
 ((relation Kit-Kats Horse adjacent))
 ((relation Hershey-bars Fox adjacent))
 
-/* TODO need to generate these logically.  I generated these manually */
-% Norwegian lives next to blue
-    % since Norwegian is first, the only guy next to first is second
-%((connect Blue Second))
-
 ((makeconnect1)
    (findOrder Blue ORD)
-   (pp ORD)
+   %(pp ORD)
    (adjacent ORD ADJ)
-   (pp ADJ)
+   %(pp ADJ)
    (addcl ((maybeconnect Norwegian ADJ)))
    (fail)   %hit both sides, if applicable
 )
 ((makeconnect1)
    (findOrder Norwegian ORD)
-   (pp ORD)
+   %(pp ORD)
    (adjacent ORD ADJ)
-   (pp ADJ)
+   %(pp ADJ)
    (addcl ((maybeconnect Blue ADJ)))
    (fail)
 )
-
 
 % Green house is immediately right of ivory
     % (Y B ((R I G) or (I G R))
@@ -242,23 +242,6 @@ Please turn in your program, along with a sample of runs attached to your progra
     (right A C)
 )
 
-
-% Finds the house order for an ATTribute 
-((findOrder ATT)
-    (attExists ATT)
-    (pp (attribute does not exist))
-)
-((findOrder ATT)
-    (order ORD)
-    (search ATT ORD)
-)
-((findOrder ATT)                                        % First clause failed completely, so no order found for ATT
-    (findall VAL ((order VAL)) VALS)                    % generate a list of orders so that we can check for each order
-    (possible VALS ATT () POS)
-    (pp (order not found for ATT))
-    (pp (possible values are POS))
-)
-
 ((findOrder ATT _)
     (attExists ATT)
     (pp (attribute does not exist))
@@ -266,85 +249,6 @@ Please turn in your program, along with a sample of runs attached to your progra
 ((findOrder ATT ORD)
     (order ORD)
     (search ATT ORD)
-)
-
-% Finds the nationality for an ATTribute
-((findNation ATT)
-    (attExists ATT)
-    (pp (attribute does not exist))
-)
-((findNation ATT)
-    (nation NAT)
-    (search ATT NAT)
-)
-((findNation ATT)                                       % First clause failed completely, so no nation found for ATT
-    (findall VAL ((order VAL)) VALS)                    % generate a list of orders so that we can check for each order
-    (possible VALS ATT () POS)
-    (pp (nation not found for ATT))
-)
-
-% Finds the house color for an ATTribute 
-((findColor ATT)
-    (attExists ATT)
-    (pp (attribute does not exist))
-)
-((findColor ATT)
-    (color COL)
-    (search ATT COL)
-)
-((findColor ATT)                                        % First clause failed completely, so no color found for ATT
-    (findall VAL ((order VAL)) VALS)                    % generate a list of orders so that we can check for each order
-    (possible VALS ATT () POS)
-    (pp (color not found for ATT))
-    (pp (possible values are POS))
-)
-
-% Finds the beverage for an ATTribute 
-((findDrink ATT)
-    (attExists ATT)
-    (pp (attribute does not exist))
-)
-((findDrink ATT)
-    (drink BEV)
-    (search ATT BEV)
-)
-((findDrink ATT)                                        % First clause failed completely, so no beverage found for ATT
-    (findall VAL ((order VAL)) VALS)                    % generate a list of orders so that we can check for each order
-    (possible VALS ATT () POS)
-    (pp (drink not found for ATT))
-    (pp (possible values are POS))
-)
-
-% Finds the candy for an ATTribute
-((findCandy ATT)
-    (attExists ATT)
-    (pp (attribute does not exist))
-)
-((findCandy ATT)
-    (candy CAN)
-    (search ATT CAN)
-)
-((findCandy ATT)                                        % First clause failed completely, so no candy found for ATT
-    (findall VAL ((order VAL)) VALS)                    % generate a list of orders so that we can check for each order
-    (possible VALS ATT () POS)
-    (pp (candy not found for ATT))
-    (pp (possible values are POS))
-)
-
-% Finds the pet for an ATTribute 
-((findPet ATT)
-    (attExists ATT)
-    (pp (attribute does not exist))
-)
-((findPet ATT)
-    (pet PET)
-    (search ATT PET)
-)
-((findPet ATT)                                          % First clause failed completely, so no pet found for ATT
-    (findall VAL ((order VAL)) VALS)                    % generate a list of orders so that we can check for each order
-    (possible VALS ATT () POS)
-    (pp (pet not found for ATT))
-    (pp (possible values are POS))
 )
 
 ((findType ATT TYPE)
@@ -372,7 +276,9 @@ Please turn in your program, along with a sample of runs attached to your progra
    (makeconnects)
 )
 
-/*PSUEDO CODE FOR TALOR SEARCH
+?((dynamicPopulation))
+
+/*PSUEDO CODE FOR TAYLOR SEARCH
 ******************************************
 ?((search <dict> <clause> RESULTS))
 	Where <dict> is a dictionary (e.g. color) element to search for
@@ -384,7 +290,6 @@ Please turn in your program, along with a sample of runs attached to your progra
 		IF length == 1, an exact match was found.
 		IF length > 1, multiple matches were found -- display "potential" answer
 		EXCEPT for the general house case (unless we decide that "house" refers to order?)
-
 ~
 	
 IF <dict> is a type
@@ -526,7 +431,9 @@ innerSearch will continue to search on <search list> until either the goal is fo
 (ex. what color is the house that the [ATT]Snickers owner lives in?) color
 (ex. what beverage does the [ATT]Snickers owner drink?) drink
 (ex. what candy does the [ATT]Snickers owner eat?) candy
-(ex. what pet does the [ATT]Snickers owner own) pet */
+(ex. what pet does the [ATT]Snickers owner own) pet 
+ex call: ?((puzzleFind Snickers nation))
+*/
 ((puzzleFind ATT _)
     (negg getType ATT _)
     (pp (ATT does not exist))
@@ -541,3 +448,51 @@ innerSearch will continue to search on <search list> until either the goal is fo
     (pp (TYPE answer not found for ATT))
     (pp (possible values are POS))
 )
+
+/* SAMPLE QUERIES AND OUTPUT
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    reload FoertmeyerLiOkelAss3.frl
+
+    What does the Ukranian drink?
+    ?((puzzleFind Ukrainian drink))
+    Tea
+
+    Where is the person in the yellow house from?
+    ?((puzzleFind Yellow nation))
+    Norwegian
+
+    What candy does the Spaniard eat?
+    ?((puzzleFind Spaniard candy))
+    (candy answer not found for Spaniard)
+    (possible values are (Smarties Snicker Hershey-bars))
+
+    What does the person who eats Kit-Kats drink?
+    ?((puzzleFind Kit-Kats drink))
+    (drink answer not found for Kit-Kats)
+    ((possible values are (Milk Tea Coffee)))
+
+    In which house does the person who likes orange juice live?
+    ?((puzzleFind OrangeJuice order))
+    (order answer not found for OrangeJuice)
+    ((possible values are (First Second Fourth Fifth)))
+
+    Who lives in the green house?
+    ?((puzzleFind Green nation))
+    (nation answer not found for Green)
+    (possible values are (Spaniard Ukrainian Japanese))
+
+    Tell me everything that is known about the Norweigan's hosue
+    ?((fullGraph Norwegian X)(pp X))
+    (Kit-kats Yellow First Norwegian)
+
+    Tell me everything that is known about the Green House
+    ?((fullGraph Green X)(pp X))
+    Coffee Green
+
+    Tell me everything that is known about the second house
+    ?((fullGraph Second X)(pp X))
+    (Blue Horse Second)
+
+
+*/
