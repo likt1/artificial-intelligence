@@ -29,9 +29,25 @@
 
 ((ModusPonens (A | (imp | B)) )
    (known (A))
-   (negg known (B))
-   (addcl ((known B)))
+   (addtoKB B)
 )
+
+
+((addtoKB (A|_) )
+   (length A N)
+   (less 1 N)
+   (!)
+   (negg known A)
+   (addcl ((known A)))
+)
+((addtoKB A)
+   (length A N)
+   (eq 1 N)
+   (!)
+   (negg known A)
+   (addcl ((known A)))
+)
+
 
 ((infer TYPE)
    (known CLAUSE)
@@ -58,6 +74,7 @@
    (negg known RESULT)
    (addcl ((known RESULT)))
 )
+
 ((infer TYPE)
    (known CLAUSE)
    (length CLAUSE N)
