@@ -9,7 +9,84 @@
 % for each of the rules of inference for propositional logic.  
 % These rules are to be used conjunction with a knowledge base in at most two inference steps. 
 
+% KNOWLEDGE BASE
+% Provided by user. User should specify ((given X)), e.g. ((given p)), ((p or q)) -> yes
+
+% Destruct KB
+((destroyKB)(kill known)(kill conclusion))
+
+
+((buildKB ()))
+((buildKB (H | T))
+   (addcl ((known H)))
+   (buildKB T)
+)
+
+((check)
+   (conclusion CONCLUSION)
+   (known CONCLUSION)
+)
+
+((ModusPonens (A | (imp | B)) )
+   (known (A))
+   (negg known (B))
+   (addcl ((known B)))
+)
+
+((infer TYPE)
+   (known CLAUSE)
+   (length CLAUSE N)
+   (less 1 N)
+   (roi UnitResolution TYPE CLAUSE RESULT)
+   (addcl ((known RESULT)))
+)
+((infer TYPE)
+   (eq TYPE cnf)
+   (known CLAUSE)
+   (length CLAUSE N)
+   (negg eq N 1)
+   (roi AndElimination TYPE CLAUSE RESULT)
+   (negg known (RESULT))
+   (addcl ((known RESULT)))
+)
+((infer TYPE)
+   (eq TYPE cnf)
+   (known CLAUSE)
+   (length CLAUSE N)
+   (negg eq N 1)
+   (deMorgan CLAUSE RESULT)
+   (known RESULT)
+   (addcl ((known RESULT)))
+)
+((infer TYPE)
+   (known CLAUSE)
+   (length CLAUSE N)
+   (negg eq N 1)
+   (ModusPonens CLAUSE)
+)
+
+((small_prover TYPE PREMISES CONCLUSION STEPS)
+   (destroyKB)
+   (buildKB PREMISES)  
+   (addcl ((conclusion CONCLUSION)))
+   (infer TYPE)
+   (check)  
+)
+((small_prover TYPE PREMISES CONCLUSION STEPS)
+   (destroyKB)
+   (buildKB PREMISES)  
+   (addcl ((conclusion CONCLUSION)))
+   (infer TYPE)
+   (infer TYPE)  
+   (check)
+)
+
+
 /*************** The following is from small_prover.frl *********/
+
+% ((roi NAME  TYPE PREMISES CONCLUSION)) 
+% Holds if the rule of inference with name NAME and premises PREMISES written in TYPE (cnf or inf)
+% can be used to infer CONCLUSION.
 
 ((roi UnitResolution  cnf ((A or B) (~ B))  A)) 
 ((roi UnitResolution  cnf ((A or B) (~ A))  B)) 
@@ -18,11 +95,11 @@
 
 ((roi UnitResolution  inf  ( ( (~ A) imp B) (~ B))  A)) 
 
-((roi AndElimination _ ((A ^ | T)) A)) 
-((roi AndElimination _ ((A ^ | T )) B)(member B T)) 
+((roi AndElimination _ ((A and | T)) A)) 
+((roi AndElimination _ ((A and | T )) B)(member B T)) 
 
 ((roi AndIntroduction _ () ())) 
-((roi AndIntroduction _  (A | T) ( A ^ | T1) ) 
+((roi AndIntroduction _  (A | T) ( A and | T1) ) 
      (negg member_op OP T) 
      (roi AndIntroduction _ T T1)) 
 
@@ -32,9 +109,13 @@
 % De Morgan's Rules (some of the clauses): 
 ((deMorgan () ())) 
 
+% This was written by Taylor
+((deMorgan ((~ (A and B) )) ((~ A) or (~ B)))) 
 ((deMorgan ((~ (A and B and | T) )) ((~ A) or (~ B) or T1))
 	(deMorgan (~ T) T1)(!)) 
 
+% This was written by Taylor
+((deMorgan ((~ (A or B) )) ((~ A) and (~ B)))) 
 ((deMorgan ((~ (A or B or | T) )) ((~ A) and (~ B) and T1))
 	(deMorgan (~ T) T1)(!)) 
 ((deMorgan ((~ (A and B or | T) )) ((~ A) or (~ B) and T1))
