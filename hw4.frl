@@ -51,25 +51,24 @@
 
 ((infer TYPE)
    (known CLAUSE)
-   (length CLAUSE N)
-   (less 1 N)
+   /*(length CLAUSE N)
+   (less 1 N)*/
    (roi UnitResolution TYPE CLAUSE RESULT)
+   (negg known RESULT)
    (addcl ((known RESULT)))
 )
+/*
 ((infer TYPE)
    (eq TYPE cnf)
    (known CLAUSE)
-   (length CLAUSE N)
-   (less 1 N)
    (roi AndElimination TYPE CLAUSE RESULT)
    (negg known (RESULT))
    (addcl ((known RESULT)))
 )
+*/
 ((infer TYPE)
    (eq TYPE cnf)
    (known CLAUSE)
-   (length CLAUSE N)
-   (less 1 N)
    (deMorgan CLAUSE RESULT)
    (negg known RESULT)
    (addcl ((known RESULT)))
@@ -77,8 +76,6 @@
 
 ((infer TYPE)
    (known CLAUSE)
-   (length CLAUSE N)
-   (less 1 N)
    (ModusPonens CLAUSE)
 )
 
@@ -98,6 +95,17 @@
    (check)
 )
 
+% Modified from small_prover.frl
+((roi UnitResolution  cnf ((A or B)) (A))
+   (known (~ B))
+)
+((roi UnitResolution  cnf ((A or B)) (B))
+   (known (~ A))
+)
+
+((roi UnitResolution  inf   ((~ A) imp B) (A))
+   (known (~ B))
+) 
 
 /*************** The following is from small_prover.frl *********/
 
@@ -105,8 +113,11 @@
 % Holds if the rule of inference with name NAME and premises PREMISES written in TYPE (cnf or inf)
 % can be used to infer CONCLUSION.
 
+
 ((roi UnitResolution  cnf ((A or B) (~ B))  A)) 
 ((roi UnitResolution  cnf ((A or B) (~ A))  B)) 
+
+
 
 % or, in implicative form: 
 
