@@ -13,25 +13,26 @@
 % Provided by user. User should specify ((given X)), e.g. ((given p)), ((p or q)) -> yes
 
 % Destruct KB
-((destroyKB)(kill known)(kill conclusion))
+?((dict X)(kill X)(fail))
+((destroyKB)(kill known)(kill conclusion)(kill step))
 
 
 ((buildKB ()))
 ((buildKB (H | T))
-   (addcl ((known H)))
-   (buildKB T)
+	(addcl ((known H)))
+	(buildKB T)
+)
+
+((buildSteps ()))
+((buildSteps (H | T))
+	(addcl ((step H)))
+	(buildSteps T)
 )
 
 ((check)
    (conclusion CONCLUSION)
    (known CONCLUSION)
 )
-
-((ModusPonens (A | (imp | B)) )
-   (known (A))
-   (addtoKB B)
-)
-
 
 ((addtoKB (A|_) )
    (length A N)
@@ -48,16 +49,26 @@
    (addcl ((known A)))
 )
 
+% For Backwards Chaining
+% For a knowledge base of TYPE, try different Rules of Inference (roi) to infer new values.
+%
 
 ((infer TYPE)
+	(known CLAUSE)
+	(rule RULE)
+	(roi RULE TYPE CLAUSE RESULT)
+	(negg known RESULT)
+	(addcl ((known RESULT)))
+	(addcl ((step RULE)))
+) 
+/*
+((infer TYPE)
    (known CLAUSE)
-   /*(length CLAUSE N)
-   (less 1 N)*/
    (roi UnitResolution TYPE CLAUSE RESULT)
    (negg known RESULT)
    (addcl ((known RESULT)))
 )
-/*
+
 ((infer TYPE)
    (eq TYPE cnf)
    (known CLAUSE)
@@ -65,7 +76,7 @@
    (negg known (RESULT))
    (addcl ((known RESULT)))
 )
-*/
+
 ((infer TYPE)
    (eq TYPE cnf)
    (known CLAUSE)
@@ -78,34 +89,92 @@
    (known CLAUSE)
    (ModusPonens CLAUSE)
 )
+*/
 
+% For forward chaining
+((infer2 TYPE)
+	(step STEP)
+	(known CLAUSE)
+	(roi STEP TYPE CLAUSE RESULT)
+	(negg known RESULT)
+	(addcl ((known RESULT)))
+)
+
+% Backward Chaining
 ((small_prover TYPE PREMISES CONCLUSION STEPS)
-   (destroyKB)
-   (buildKB PREMISES)  
-   (addcl ((conclusion CONCLUSION)))
-   (infer TYPE)
-   (check)  
+	(var STEPS)
+	(destroyKB)
+	(addcl ((known PREMISES))) % Preserve initial premises. Could be useful with AndIntroduction
+	(buildKB PREMISES)  
+	(addcl ((conclusion CONCLUSION)))
+	(infer TYPE)
+	(check)  
 )
 ((small_prover TYPE PREMISES CONCLUSION STEPS)
-   (destroyKB)
-   (buildKB PREMISES)  
-   (addcl ((conclusion CONCLUSION)))
-   (infer TYPE)
-   (infer TYPE)  
-   (check)
+	(var STEPS)
+	(destroyKB)
+	(addcl ((known PREMISES))) % Preserve initial premises. Could be useful with AndIntroduction
+	(buildKB PREMISES)  
+	(addcl ((conclusion CONCLUSION)))
+	(infer TYPE)
+	(infer TYPE)  
+	(check)
+)
+
+% Forward Chaining
+((small_prover TYPE PREMISES CONCLUSION STEPS)
+	(var CONCLUSION)
+	(destroyKB)
+	(addcl ((known PREMISES))) % Preserve initial premises. Could be useful with AndIntroduction
+	(buildKB PREMISES)
+	(buildSteps STEPS)
+	(infer2 TYPE)
+	(infer2 TYPE)
+	(list step)
+)
+((small_prover TYPE PREMISES CONCLUSION STEPS)
+	(var CONCLUSION)
+	(destroyKB)
+	(addcl ((known PREMISES))) % Preserve initial premises. Could be useful with AndIntroduction
+	(buildKB PREMISES)
+	(buildSteps STEPS)
+	(infer2 TYPE)
+	(list step)
 )
 
 % Modified from small_prover.frl
+
 ((roi UnitResolution  cnf ((A or B)) (A))
    (known (~ B))
 )
+((roi UnitResolution  cnf (A or B) (A))
+   (known (~ B))
+)
 ((roi UnitResolution  cnf ((A or B)) (B))
+   (known (~ A))
+)
+((roi UnitResolution  cnf (A or B) (B))
    (known (~ A))
 )
 
 ((roi UnitResolution  inf   ((~ A) imp B) (A))
    (known (~ B))
 ) 
+
+
+((rule UnitResolution))
+((rule deMorgan))
+((rule AndElimination))
+((rule AndIntroduction))
+((rule ModusPonens))
+
+((roi ModusPonens inf ((A imp B)) (B))
+	(known (A))
+)
+((roi ModusPonens inf (A imp  B) (B))
+	(known (A))
+)
+((roi ModusPonens inf ((A imp B) (A)) (B)))
 
 /*************** The following is from small_prover.frl *********/
 
@@ -138,20 +207,20 @@
 ((deMorgan () ())) 
 
 % This was written by Taylor
-((deMorgan ((~ (A and B) )) ((~ A) or (~ B)))) 
-((deMorgan ((~ (A and B and | T) )) ((~ A) or (~ B) or T1))
+((roi deMorgan cnf ((~ (A and B) )) ((~ A) or (~ B)))) 
+((roi deMorgan cnf ((~ (A and B and | T) )) ((~ A) or (~ B) or T1))
 	(deMorgan (~ T) T1)(!)) 
 
 % This was written by Taylor
-((deMorgan ((~ (A or B) )) ((~ A) and (~ B)))) 
-((deMorgan ((~ (A or B or | T) )) ((~ A) and (~ B) and T1))
+((roi deMorgan cnf ((~ (A or B) )) ((~ A) and (~ B)))) 
+((roi deMorgan cnf ((~ (A or B or | T) )) ((~ A) and (~ B) and T1))
 	(deMorgan (~ T) T1)(!)) 
-((deMorgan ((~ (A and B or | T) )) ((~ A) or (~ B) and T1))
+((roi deMorgan cnf ((~ (A and B or | T) )) ((~ A) or (~ B) and T1))
 	(deMorgan (~ T) T1)(!))
 
-((deMorgan ((~ (A or B and | T) )) ((~ A) and (~ B) or T1))
+((roi deMorgan cnf ((~ (A or B and | T) )) ((~ A) and (~ B) or T1))
 	(deMorgan (~ T) T1)(!)) 
-((deMorgan (~ (A)) (~ A)))
+((roi deMorgan cnf (~ (A)) (~ A)))
 
 /************ End small_prover.frl ******************************/
 
