@@ -12,138 +12,102 @@
 % KNOWLEDGE BASE
 % Provided by user. User should specify ((given X)), e.g. ((given p)), ((p or q)) -> yes
 
-% Destruct KB
-((destroyKB)(kill known)(kill conclusion))
+% Reset state space
+?((dict X)(kill X)(fail))
 
-
-((buildKB ()))
-((buildKB (H | T))
-   (addcl ((known H)))
-   (buildKB T)
-)
-
-((check)
-   (conclusion CONCLUSION)
-   (known CONCLUSION)
-)
-
-((ModusPonens (A | (imp | B)) )
-   (known (A))
-   (addtoKB B)
-)
-
-
-((addtoKB (A|_) )
-   (length A N)
-   (less 1 N)
-   (!)
-   (negg known A)
-   (addcl ((known A)))
-)
-((addtoKB A)
-   (length A N)
-   (eq 1 N)
-   (!)
-   (negg known A)
-   (addcl ((known A)))
-)
-
-
-((infer TYPE)
-   (known CLAUSE)
-   /*(length CLAUSE N)
-   (less 1 N)*/
-   (roi UnitResolution TYPE CLAUSE RESULT)
-   (negg known RESULT)
-   (addcl ((known RESULT)))
-)
-/*
-((infer TYPE)
-   (eq TYPE cnf)
-   (known CLAUSE)
-   (roi AndElimination TYPE CLAUSE RESULT)
-   (negg known (RESULT))
-   (addcl ((known RESULT)))
-)
-*/
-((infer TYPE)
-   (eq TYPE cnf)
-   (known CLAUSE)
-   (deMorgan CLAUSE RESULT)
-   (negg known RESULT)
-   (addcl ((known RESULT)))
-)
-
-((infer TYPE)
-   (known CLAUSE)
-   (ModusPonens CLAUSE)
-)
-
+% Forward Chaining
+% 	Type: CNF or INF
+%
 ((small_prover TYPE PREMISES CONCLUSION STEPS)
-   (destroyKB)
-   (buildKB PREMISES)  
-   (addcl ((conclusion CONCLUSION)))
-   (infer TYPE)
-   (check)  
+	(var CONCLUSION)
+	(member STEP STEPS)
+	(roi STEP TYPE PREMISES CONCL)
+	(append CONCLUSION (CONCL) CONCLUSION1)
+	(append PREMISES (CONCL) XPREMISES)
+	(!)
+	(small_prover2 TYPE XPREMISES CONCLUSION2 STEPS)
+	(append CONCLUSION1 CONCLUSION2 CONCLUSION)
 )
 ((small_prover TYPE PREMISES CONCLUSION STEPS)
-   (destroyKB)
-   (buildKB PREMISES)  
-   (addcl ((conclusion CONCLUSION)))
-   (infer TYPE)
-   (infer TYPE)  
-   (check)
+	(var CONCLUSION)
+	(member STEP STEPS)
+	(roi STEP TYPE PREMISES CONCL)
+	(append CONCLUSION (CONCL) CONCLUSION)
+	(append PREMISES (CONCL) XPREMISES)
 )
 
-% Modified from small_prover.frl
-((roi UnitResolution  cnf ((A or B)) (A))
-   (known (~ B))
-)
-((roi UnitResolution  cnf ((A or B)) (B))
-   (known (~ A))
+((small_prover2 TYPE PREMISES CONCLUSION STEPS)
+	(var CONCLUSION)
+	(member STEP STEPS)
+	(roi STEP TYPE PREMISES CONCL)
+	(append CONCLUSION (CONCL) CONCLUSION)
+	(append PREMISES (CONCL) PREMISES)
 )
 
-((roi UnitResolution  inf   ((~ A) imp B) (A))
-   (known (~ B))
-) 
+((roi deMorgan cnf INPUT RETURN)
+	(deMorgan INPUT RETURN)
+)
 
+((deMorgan PREMISES CONCLUSION)
+	(member (~ LIST) PREMISES)
+	(deMorgan (~ LIST) CONCLUSION)
+)
+((deMorgan (~ (A and B) ) ((~ A) or (~ B))))
+((deMorgan ((~ (A and B) )) ((~ A) or (~ B))))
+((deMorgan (~ (A or B) ) ((~ A) and (~ B))))
+((deMorgan ((~ (A or B) )) ((~ A) and (~ B))))
+
+% member_append:
+%	Check if E is a member of L. 
+%	If not, append to L.
+((member_append E L)
+	(eq TEMP L)
+	(append TEMP E L)
+)
+((member_append E L)
+	(append L E L)
+)
+ 
 /*************** The following is from small_prover.frl *********/
 
 % ((roi NAME  TYPE PREMISES CONCLUSION)) 
 % Holds if the rule of inference with name NAME and premises PREMISES written in TYPE (cnf or inf)
 % can be used to infer CONCLUSION.
+((roi UnitResolution  cnf ((A or B) (~ B))  ((A)(~ B)) )) 
+((roi UnitResolution cnf ((A or B) and (~ B)) ((A) and (~ B)) ))
+((roi UnitResolution  cnf ((A or B) (~ A)) ((B)(~ A)) )) 
+((roi UnitResolution cnf ((A or B) and (~ A)) ((B) and (~ A)) ))
 
-
-((roi UnitResolution  cnf ((A or B) (~ B))  A)) 
-((roi UnitResolution  cnf ((A or B) (~ A))  B)) 
-
-
+((roi Resolution cnf ((A or B)((~ A) or C)) (B or C)))
+((roi Resolution cnf ((A or B) and ((~ A) or C)) (B or C)))
 
 % or, in implicative form: 
-
 ((roi UnitResolution  inf  ( ( (~ A) imp B) (~ B))  A)) 
+((roi UnitResolution  inf  ( ( (~ A) imp B) and (~ B))  A)) 
+
+((roi Resolution inf ( ( (~ A) imp B) (B imp C)) ((~ A) imp C)))
+((roi Resolution inf ( ( (~ A) imp B) and (B imp C)) ((~ A) imp C)))
 
 ((roi AndElimination _ ((A and | T)) A)) 
 ((roi AndElimination _ ((A and | T )) B)(member B T)) 
 
 ((roi AndIntroduction _ () ())) 
 ((roi AndIntroduction _  (A | T) ( A and | T1) ) 
-     (negg member_op OP T) 
+     (negg member_op T) 
      (roi AndIntroduction _ T T1)) 
+
+((roi DoubleNegation _ ((~ ~ A)) A))
+
 
 ((operators (and or imp ~))) 
 ((member_op L)(operators OPS )(member OP OPS)) 
 
 % De Morgan's Rules (some of the clauses): 
 ((deMorgan () ())) 
-
-% This was written by Taylor
-((deMorgan ((~ (A and B) )) ((~ A) or (~ B)))) 
+ 
 ((deMorgan ((~ (A and B and | T) )) ((~ A) or (~ B) or T1))
 	(deMorgan (~ T) T1)(!)) 
 
-% This was written by Taylor
-((deMorgan ((~ (A or B) )) ((~ A) and (~ B)))) 
 ((deMorgan ((~ (A or B or | T) )) ((~ A) and (~ B) and T1))
 	(deMorgan (~ T) T1)(!)) 
 ((deMorgan ((~ (A and B or | T) )) ((~ A) or (~ B) and T1))
@@ -158,7 +122,6 @@
 /************* The following is from list_pro.frl ***************/
 
 ((member H (H|_)))  %the head of a list is an element of that list
-
 ((member E ( _| T ))                              
 	    		%  otherwise, E is an element of the list if it
       (member E T))     % is an element of its tail 
@@ -175,7 +138,6 @@
     that X+Y is equal to Z
 
 */
-
 ((length () 0 ))
 ((length (_|T) N)
            (length T N1)
@@ -192,17 +154,13 @@ To write this predicate we note the following:
     the tail of L is the tail of L1 followed by L2
 
 */
-
-
-
 ((append () L L))  %when L1 is () L is the same as L2 
-
 ((append (H1|T1) L2 (H1|T))
-            (append T1 L2 T))
+    (append T1 L2 T)
+)
 
-%using append to define member
-((member_append E L)
-             (append _ (E|_) L))
+%((append A B (A B)))
+
 
 % list of distinct elements in mem
 ((mem _ () ()))
@@ -222,42 +180,22 @@ To write this predicate we note the following:
 substituting the element equl to the head of the list by a new element results in a list whose head is equal to the new element
 and the tail is obtained by substituting all occurrences of elements equal to the "old head" by the new element 
 */ 
- ((substitute H (H|T) H2 (H2 | T2)) 
-                       (substitute H T H2 T2) 
-                       (!)) 
+% ((substitute E L1 NEW L2))
+% 	Where 	E:	(old) Element in list to be substituted
+%		  	L1:	List to perform substitution on 
+%			NEW: (new) Element to be substituted in
+%			L2: Put new list here
+((substitute H (H|T) H2 (H2 | T2)) 
+	(substitute H T H2 T2) 
+	(!)
+) 
 /* otherwise */
 ((substitute H (H1|T1) H2 (H1|T2))
-          (substitute H T1 H2 T2))  % in a list with the same head as 
+	(substitute H T1 H2 T2)
+)  % in a list with the same head as 
                                     % the OLD list and a "new" tail, obtained 
                                     % by the substitution 
  
-/* illustration of the use of the cut */
-((f X 2) 
-        (less 10 X)) 
-
- ((f X 3) 
-            (negg less 10 X) 
-            (less 5 X)) 
-
- ((f X 0 ) 
-            (negg less 5 X)) 
-   
-
-% We then redefine f as follows: 
-
-((f1 X 2) 
-        (less 10 X) 
-        (!)) 
-
- ((f1 X 3) 
-         (negg less 10 X) 
-         (less 5 X) 
-        (!)) 
-
- ((f1 X 0 ) 
-        (negg less 5 X)) 
-
-
 /* use of difference lists */
 
 /* 
