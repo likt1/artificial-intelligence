@@ -16,43 +16,35 @@
 ?((dict X)(kill X)(fail))
 ((destroyKB)(kill known)(kill conclusion)(kill step))
 
-
+% Build Knowledge Base
+% Takes a list and adds each element as a "known" predicate.
+% Succeeds when list is empty.
 ((buildKB ()))
 ((buildKB (H | T))
 	(addcl ((known H)))
 	(buildKB T)
 )
 
+% Build STEPS
+% Takes a list and adds each element as a "step" predicate.
+% Succeeds when list is empty.
 ((buildSteps ()))
 ((buildSteps (H | T))
 	(addcl ((step H)))
 	(buildSteps T)
 )
 
+% Checks knowledge base to see if conclusion is known.
+% That is, succeeds when the conclusion has been inferred.
 ((check)
    (conclusion CONCLUSION)
    (known CONCLUSION)
 )
 
-((addtoKB (A|_) )
-   (length A N)
-   (less 1 N)
-   (!)
-   (negg known A)
-   (addcl ((known A)))
-)
-((addtoKB A)
-   (length A N)
-   (eq 1 N)
-   (!)
-   (negg known A)
-   (addcl ((known A)))
-)
-
-% For Backwards Chaining
+% Infer (Backwards Chaining)
 % For a knowledge base of TYPE, try different Rules of Inference (roi) to infer new values.
-%
-
+% Succeeds when an inference was made successfully, inference is added to "known", 
+% and the rule is added to "step"
 ((infer TYPE)
 	(known CLAUSE)
 	(rule RULE)
@@ -62,16 +54,30 @@
 	(addcl ((step RULE)))
 )
 
-% For forward chaining
+% Infer (Forward Chaining)
+% For a knowledge base of TYPE, try the Rules of Inference (roi) specified in steps to infer new values.
+% Succeeds when an inference was made successfully and the inference is added as a "known"
 ((infer2 TYPE)
 	(step STEP)
 	(known CLAUSE)
 	(roi STEP TYPE CLAUSE RESULT)
-	(negg known RESULT)
-	(addcl ((known RESULT)))
+	(negg conclusion RESULT)
+	(addcl ((conclusion RESULT)))
 )
 
-% Backward Chaining
+((return PREDICATE RESULT)
+	(PREDICATE A)
+	(negg member A RESULT)
+	(return PREDICATE (RESULT|A))
+)
+((return PREDICATE RESULT)
+	(negg PREDICATE A)
+)
+
+% Small Prover (Backward Chaining)
+% Taking PREMISES of TYPE, attempt to reach CONCLUSION within two inferences, returned as STEPS.
+% Add PREMISES as "known"s, CONCLUSION as a conclusion. Utilize infer one time to add new "known"s.
+% Check to see if conclusion has been reached.
 ((small_prover TYPE PREMISES CONCLUSION STEPS)
 	(var STEPS)
 	(destroyKB)
@@ -80,7 +86,11 @@
 	(addcl ((conclusion CONCLUSION)))
 	(infer TYPE)
 	(check)  
+	%(list step)
+	(return step STEPS)
 )
+% Small Prover OVERLOAD
+% Tries two layers of inference before checking.
 ((small_prover TYPE PREMISES CONCLUSION STEPS)
 	(var STEPS)
 	(destroyKB)
@@ -90,9 +100,11 @@
 	(infer TYPE)
 	(infer TYPE)  
 	(check)
+	%(list step)
+	(return step STEPS)
 )
 
-% Forward Chaining
+% Small Prover (Forward Chaining)
 ((small_prover TYPE PREMISES CONCLUSION STEPS)
 	(var CONCLUSION)
 	(destroyKB)
@@ -101,7 +113,7 @@
 	(buildSteps STEPS)
 	(infer2 TYPE)
 	(infer2 TYPE)
-	(list step)
+	(list conclusion)
 )
 ((small_prover TYPE PREMISES CONCLUSION STEPS)
 	(var CONCLUSION)
@@ -110,7 +122,7 @@
 	(buildKB PREMISES)
 	(buildSteps STEPS)
 	(infer2 TYPE)
-	(list step)
+	(list conclusion)
 )
 
 % Modified from small_prover.frl
@@ -136,7 +148,7 @@
 ((rule UnitResolution))
 ((rule deMorgan))
 ((rule AndElimination))
-((rule AndIntroduction))
+%((rule AndIntroduction))
 ((rule ModusPonens))
 
 ((roi ModusPonens inf ((A imp B)) (B))
@@ -168,11 +180,11 @@
 
 ((roi AndIntroduction _ () ())) 
 ((roi AndIntroduction _  (A | T) ( A and | T1) ) 
-     (negg member_op OP T) 
+     (negg member_op T) 
      (roi AndIntroduction _ T T1)) 
 
 ((operators (and or imp ~))) 
-((member_op L)(operators OPS )(member OP OPS)) 
+((member_op L)(operators OPS )(member L OPS)) 
 
 % De Morgan's Rules (some of the clauses): 
 ((deMorgan () ())) 
