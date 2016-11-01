@@ -65,6 +65,7 @@
 	(addcl ((conclusion RESULT)))
 )
 
+% Return
 ((return PREDICATE RESULT)
 	(PREDICATE A)
 	(negg member A RESULT)
@@ -113,7 +114,10 @@
 	(buildSteps STEPS)
 	(infer2 TYPE)
 	(infer2 TYPE)
-	(list conclusion)
+    (findall CLSE              % add conclusion clauses into CONCLUSION
+        ((conclusion CLSE))    % if CLSE is conclusion
+        CONCLUSION             % save list into CONCLUSION
+    )
 )
 ((small_prover TYPE PREMISES CONCLUSION STEPS)
 	(var CONCLUSION)
@@ -122,8 +126,15 @@
 	(buildKB PREMISES)
 	(buildSteps STEPS)
 	(infer2 TYPE)
-	(list conclusion)
+	(findall CLSE              % add conclusion clauses into CONCLUSION
+        ((conclusion CLSE))    % if CLSE is conclusion
+        CONCLUSION             % save list into CONCLUSION
+    )
 )
+
+% ((roi NAME TYPE PREMISES CONCLUSION)) 
+% Holds if the rule of inference with name NAME and premises PREMISES written in TYPE (cnf or inf)
+% can be used to infer CONCLUSION.
 
 % Modified from small_prover.frl
 
@@ -144,13 +155,14 @@
    (known (~ B))
 ) 
 
-
+% Rules
 ((rule UnitResolution))
 ((rule deMorgan))
 ((rule AndElimination))
 %((rule AndIntroduction))
 ((rule ModusPonens))
 
+% ModusPonens
 ((roi ModusPonens inf ((A imp B)) (B))
 	(known (A))
 )
@@ -159,99 +171,83 @@
 )
 ((roi ModusPonens inf ((A imp B) (A)) (B)))
 
-/*************** The following is from small_prover.frl *********/
-
-% ((roi NAME  TYPE PREMISES CONCLUSION)) 
-% Holds if the rule of inference with name NAME and premises PREMISES written in TYPE (cnf or inf)
-% can be used to infer CONCLUSION.
 
 
+
+/*************** The following is modified from small_prover.frl *********/
+
+% UnitResolution CNF form
 ((roi UnitResolution  cnf ((A or B) (~ B))  A)) 
 ((roi UnitResolution  cnf ((A or B) (~ A))  B)) 
 
-
-
-% or, in implicative form: 
-
+% UnitResolution INF form
 ((roi UnitResolution  inf  ( ( (~ A) imp B) (~ B))  A)) 
 
+% AndElimination
 ((roi AndElimination _ ((A and | T)) A)) 
 ((roi AndElimination _ ((A and | T )) B)(member B T)) 
 
+% AndIntroduction
 ((roi AndIntroduction _ () ())) 
 ((roi AndIntroduction _  (A | T) ( A and | T1) ) 
-     (negg member_op T) 
-     (roi AndIntroduction _ T T1)) 
+    (negg member_op T) 
+    (roi AndIntroduction _ T T1)) 
 
+% Operators
 ((operators (and or imp ~))) 
 ((member_op L)(operators OPS )(member L OPS)) 
 
-% De Morgan's Rules (some of the clauses): 
-((deMorgan () ())) 
-
-% This was written by Taylor
+% De Morgan's Rules (some of the clauses):
+% Some of this was written by Taylor
 ((roi deMorgan cnf ((~ (A and B) )) ((~ A) or (~ B)))) 
 ((roi deMorgan cnf ((~ (A and B and | T) )) ((~ A) or (~ B) or T1))
 	(deMorgan (~ T) T1)(!)) 
-
-% This was written by Taylor
 ((roi deMorgan cnf ((~ (A or B) )) ((~ A) and (~ B)))) 
 ((roi deMorgan cnf ((~ (A or B or | T) )) ((~ A) and (~ B) and T1))
 	(deMorgan (~ T) T1)(!)) 
 ((roi deMorgan cnf ((~ (A and B or | T) )) ((~ A) or (~ B) and T1))
 	(deMorgan (~ T) T1)(!))
-
 ((roi deMorgan cnf ((~ (A or B and | T) )) ((~ A) and (~ B) or T1))
 	(deMorgan (~ T) T1)(!)) 
 ((roi deMorgan cnf (~ (A)) (~ A)))
 
-/************ End small_prover.frl ******************************/
-
-/************* The following is from list_pro.frl ***************/
-
-((member H (H|_)))  %the head of a list is an element of that list
-
-((member E ( _| T ))                              
-	    		%  otherwise, E is an element of the list if it
-      (member E T))     % is an element of its tail 
 
 
 
+/************* The following is modified from list_pro.frl ***************/
+
+% Member ((member ELEMENT LIST))
+% is true if ELEMENT is a member of LIST
+((member H (H|_)))     % the head of a list is an element of that list
+((member E ( _| T ))   % otherwise, E is an element of the list if it
+    (member E T)     % is an element of its tail
+)
+
+% Length ((length LIST N))
+% holds when N is the length of (number of elements in) the list LIST:
 /*
-(length LIST N) holds when N is the length of (number of elements in)
- the list LIST:
-
     The length of a non empty list is 1 + length of its tail;
     The length of an empty list is 0. 
     The length predicate makes use of the built in predicate sum  (sum X Y Z) holds when it is true 
     that X+Y is equal to Z
-
 */
-
 ((length () 0 ))
 ((length (_|T) N)
-           (length T N1)
-           (sum N1 1 N))
+    (length T N1)
+    (sum N1 1 N)
+)
 
-
-
-
+% Append ((append LIST1 LIST2 OUTLIST))
+% holds if L is the list L1 followed by the list L2.  To write this predicate we note the following: 
 /*
-(apppend L1 L2 L) holds if L is the list L1 followed by the list L2 .
-To write this predicate we note the following: 
-
     the head of L is the same as the head of L1
     the tail of L is the tail of L1 followed by L2
-
 */
-
-
-
 ((append () L L))  %when L1 is () L is the same as L2 
-
 ((append (H1|T1) L2 (H1|T))
-            (append T1 L2 T))
+    (append T1 L2 T)
+)
 
-%using append to define member
-((member_append E L)
-             (append _ (E|_) L))
+
+
+    
