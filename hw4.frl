@@ -21,6 +21,7 @@
 % Succeeds when list is empty.
 ((buildKB ()))
 ((buildKB (H | T))
+   (negg known H)
 	(addcl ((known H)))
 	(buildKB T)
 )
@@ -63,6 +64,7 @@
 	(roi STEP TYPE CLAUSE RESULT)
 	(negg conclusion RESULT)
 	(addcl ((conclusion RESULT)))
+   (addcl ((known RESULT)))
 )
 
 % Return
@@ -87,8 +89,10 @@
 	(addcl ((conclusion CONCLUSION)))
 	(infer TYPE)
 	(check)  
-	%(list step)
-	(return step STEPS)
+	(findall STEP 
+      ((step STEP))
+      STEPS
+   )
 )
 % Small Prover OVERLOAD
 % Tries two layers of inference before checking.
@@ -101,8 +105,10 @@
 	(infer TYPE)
 	(infer TYPE)  
 	(check)
-	%(list step)
-	(return step STEPS)
+   (findall STEP 
+      ((step STEP))
+      STEPS
+   )
 )
 
 % Small Prover (Forward Chaining)
@@ -114,10 +120,10 @@
 	(buildSteps STEPS)
 	(infer2 TYPE)
 	(infer2 TYPE)
-    (findall CLSE              % add conclusion clauses into CONCLUSION
-        ((conclusion CLSE))    % if CLSE is conclusion
-        CONCLUSION             % save list into CONCLUSION
-    )
+   (findall CLSE              % add conclusion clauses into CONCLUSION
+     ((conclusion CLSE))    % if CLSE is conclusion
+     CONCLUSION             % save list into CONCLUSION
+   )
 )
 ((small_prover TYPE PREMISES CONCLUSION STEPS)
 	(var CONCLUSION)
@@ -177,15 +183,25 @@
 /*************** The following is modified from small_prover.frl *********/
 
 % UnitResolution CNF form
-((roi UnitResolution  cnf ((A or B) (~ B))  A)) 
-((roi UnitResolution  cnf ((A or B) (~ A))  B)) 
+((roi UnitResolution  cnf ((A or B) (~ B))  (A))) 
+((roi UnitResolution  cnf ((A or B) (~ A))  (B))) 
 
 % UnitResolution INF form
-((roi UnitResolution  inf  ( ( (~ A) imp B) (~ B))  A)) 
+((roi UnitResolution  inf  ( ( (~ A) imp B) (~ B))  (A))) 
 
-% AndElimination
-((roi AndElimination _ ((A and | T)) A)) 
-((roi AndElimination _ ((A and | T )) B)(member B T)) 
+% AndElimination - Modified
+((roi AndElimination _ ((A)) ((A)))
+   (addcl ((known (A))))
+)
+((roi AndElimination _ ((A and | T)) L)
+   (addcl ((known (A))))
+   (roi AndElimination _ (T) L2)
+   (append ((A)) L2 L)
+)
+/*
+((roi AndElimination _ ((A and | T)) (A))) 
+((roi AndElimination _ ((A and | T )) (B))(member B T)) 
+*/
 
 % AndIntroduction
 ((roi AndIntroduction _ () ())) 
@@ -199,6 +215,7 @@
 
 % De Morgan's Rules (some of the clauses):
 % Some of this was written by Taylor
+% Modified to be called via ROI
 ((roi deMorgan cnf ((~ (A and B) )) ((~ A) or (~ B)))) 
 ((roi deMorgan cnf ((~ (A and B and | T) )) ((~ A) or (~ B) or T1))
 	(deMorgan (~ T) T1)(!)) 
