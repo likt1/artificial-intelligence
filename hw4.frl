@@ -13,7 +13,7 @@
 % Provided by user. User should specify ((given X)), e.g. ((given p)), ((p or q)) -> yes
 
 %test predicates
-((fuck)
+((test_one)
    (small_prover cnf (((~ a) and b and (a or c))) (c) STEPS)
    (pp STEPS) 
 )
