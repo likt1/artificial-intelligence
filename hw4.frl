@@ -18,7 +18,7 @@
 ((destroyKB)(kill known)(kill conclusion)(kill step))
 
 %test predicates
-((tests (testAEUR_Back testMPUR_Back testURAE_Back)))
+((tests (testAEUR_Back testMPUR_Back testURDM_Back testMPUR_Fwd testURDM_Fwd)))
 
 ((testall)
     (tests TESTS)
@@ -27,7 +27,6 @@
 ((test ()))
 ((test (TEST | T))
     (pp)
-    
     (p '===' TEST '===')
     (pp)
     (TEST)
@@ -39,17 +38,34 @@
     (pp "?(small_prover inf ((a imp ((~ b) imp c))(a)(~ c)) (b) STEPS)")
     (small_prover inf ((a imp ((~ b) imp c))(a)(~ c)) (b) STEPS) 
     (pp STEPS)
+    (list known)
 )
 ((testAEUR_Back)
 	(pp "?(small_prover cnf (((~ a) and b and (a or c))) (c) STEPS)")
 	(small_prover cnf (((~ a) and b and (a or c))) (c) STEPS)
 	(pp STEPS) 
+    (list known)
 )
-((testURAE_Back)
+((testURDM_Back)
     (pp "(small_prover cnf ((~ (a and b)) or (~ c)) ((~ a) or (~ b)) STEPS)")
 	(small_prover cnf (((~ (a and b)) or c)(~ c)) ((~ a) or (~ b)) STEPS)
 	(pp STEPS)
+    (list known)
 )
+
+((testMPUR_Fwd)
+    (pp "?(small_prover inf ((a imp ((~ b) imp c))(a)(~ c)) CONCL (ModusPonens UnitResolution)) ")
+    (small_prover inf ((a imp ((~ b) imp c))(a)(~ c)) CONCL (ModusPonens UnitResolution)) 
+    (pp CONCL)
+    (list known)
+)
+((testURDM_Fwd)
+    (pp "?(small_prover cnf (((~ (a and b)) or c)(~ c)) CONCL (UnitResolution deMorgan)")
+	(small_prover cnf (((~ (a and b)) or c)(~ c)) CONCL (UnitResolution deMorgan))
+	(pp CONCL)
+    (list known)
+)
+
 
 % Build Knowledge Base
 % Takes a list and adds each element as a "known" predicate.
@@ -101,6 +117,7 @@
 % Succeeds when an inference was made successfully and the inference is added as a "known"
 ((infer2 TYPE ()))
 ((infer2 TYPE (STEP | T))
+    (!)
 	%(step STEP)
 	(known CLAUSE)
 	(roi STEP TYPE CLAUSE RESULT)
@@ -202,14 +219,18 @@
 )
 ((roi ModusPonens inf ((A imp B) (A)) B))
 
-((addToKB A)
-    (length A 1)
-    (negg known (A))
-    (addcl ((known (A))))
+((addToKB (~ A))
+    (negg known (~ A))
+    (addcl ((known (~ A))))
 )
 ((addToKB A)
-   (negg known A)
-   (addcl ((known A)))
+    (negg length A 1)
+    (negg known A)
+    (addcl ((known A)))
+)
+((addToKB A)
+   (negg known (A))
+   (addcl ((known (A))))
 )
 ((addToKB A))
 
