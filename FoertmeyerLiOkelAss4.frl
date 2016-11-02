@@ -1,0 +1,365 @@
+/*
+$$$$$$$$\ $$\                                                             
+\__$$  __|$$ |                                                            
+   $$ |   $$$$$$$\   $$$$$$\   $$$$$$\   $$$$$$\   $$$$$$\  $$$$$$\$$$$\  
+   $$ |   $$  __$$\ $$  __$$\ $$  __$$\ $$  __$$\ $$  __$$\ $$  _$$  _$$\ 
+   $$ |   $$ |  $$ |$$$$$$$$ |$$ /  $$ |$$ |  \__|$$$$$$$$ |$$ / $$ / $$ |
+   $$ |   $$ |  $$ |$$   ____|$$ |  $$ |$$ |      $$   ____|$$ | $$ | $$ |
+   $$ |   $$ |  $$ |\$$$$$$$\ \$$$$$$  |$$ |      \$$$$$$$\ $$ | $$ | $$ |
+   \__|   \__|  \__| \_______| \______/ \__|       \_______|\__| \__| \__|
+                                                                          
+                                                                          
+                                                                          
+$$$$$$$\                                                                  
+$$  __$$\                                                                 
+$$ |  $$ | $$$$$$\   $$$$$$\ $$\    $$\  $$$$$$\   $$$$$$\                
+$$$$$$$  |$$  __$$\ $$  __$$\\$$\  $$  |$$  __$$\ $$  __$$\               
+$$  ____/ $$ |  \__|$$ /  $$ |\$$\$$  / $$$$$$$$ |$$ |  \__|              
+$$ |      $$ |      $$ |  $$ | \$$$  /  $$   ____|$$ |                    
+$$ |      $$ |      \$$$$$$  |  \$  /   \$$$$$$$\ $$ |                    
+\__|      \__|       \______/    \_/     \_______|\__|                    
+                                                                          
+                                                                          
+
+Authors:
+    Foertmeyer, Thomas
+    Li, Kendrick
+    Okel, Taylor
+Date:
+    01 November 2016
+
+Description:
+    In this program you are to implement in FRIL a small theorem prover for propositional logic. 
+    You will need to implement a predicate called roi (from rule of inference) 
+    for each of the rules of inference for propositional logic.  
+    These rules are to be used conjunction with a knowledge base in at most two inference steps. 
+
+Instructions:
+    On reload, the testall predicate runs a series of tests and outputs the results.
+    Additional tests can be run by writing similar small_prover commands.
+*/
+
+
+% KNOWLEDGE BASE
+% Provided by user. User should specify ((given X)), e.g. ((given p)), ((p or q)) -> yes
+
+
+% Destruct KB
+?((dict X)(kill X)(fail))
+((destroyKB)(kill known)(kill conclusion)(kill step))
+
+%test predicates
+((tests (testAEUR_Back testMPUR_Back testURDM_Back testMPUR_Fwd testURDM_Fwd)))
+
+((testall)
+    (tests TESTS)
+    (test TESTS)
+)
+((test ()))
+((test (TEST | T))
+    (pp)
+    (p '===' TEST '===')
+    (pp)
+    (TEST)
+    (test T)
+    (pp)
+)
+
+((testMPUR_Back)
+    (pp "?(small_prover inf ((a imp ((~ b) imp c))(a)(~ c)) (b) STEPS)")
+    (small_prover inf ((a imp ((~ b) imp c))(a)(~ c)) (b) STEPS) 
+    (pp STEPS)
+    (list known)
+)
+((testAEUR_Back)
+	(pp "?(small_prover cnf (((~ a) and b and (a or c))) (c) STEPS)")
+	(small_prover cnf (((~ a) and b and (a or c))) (c) STEPS)
+	(pp STEPS) 
+    (list known)
+)
+((testURDM_Back)
+    (pp "(small_prover cnf ((~ (a and b)) or (~ c)) ((~ a) or (~ b)) STEPS)")
+	(small_prover cnf (((~ (a and b)) or c)(~ c)) ((~ a) or (~ b)) STEPS)
+	(pp STEPS)
+    (list known)
+)
+
+((testMPUR_Fwd)
+    (pp "?(small_prover inf ((a imp ((~ b) imp c))(a)(~ c)) CONCL (ModusPonens UnitResolution)) ")
+    (small_prover inf ((a imp ((~ b) imp c))(a)(~ c)) CONCL (ModusPonens UnitResolution)) 
+    (pp CONCL)
+    (list known)
+)
+((testURDM_Fwd)
+    (pp "?(small_prover cnf (((~ (a and b)) or c)(~ c)) CONCL (UnitResolution deMorgan)")
+	(small_prover cnf (((~ (a and b)) or c)(~ c)) CONCL (UnitResolution deMorgan))
+	(pp CONCL)
+    (list known)
+)
+
+
+% Build Knowledge Base
+% Takes a list and adds each element as a "known" predicate.
+% Succeeds when list is empty.
+((buildKB ()))
+((buildKB (H | T))
+   (negg known H)
+	(addcl ((known H)))
+	(buildKB T)
+)
+
+% Build STEPS
+% Takes a list and adds each element as a "step" predicate.
+% Succeeds when list is empty.
+((buildSteps ()))
+((buildSteps (H | T))
+	(addcl ((step H)))
+	(buildSteps T)
+)
+
+% Checks knowledge base to see if conclusion is known.
+% That is, succeeds when the conclusion has been inferred.
+((check TYPE)
+    (conclusion CONCLUSION)
+    (known CONCLUSION)
+)
+((check TYPE)
+    (infer TYPE)
+    (conclusion CONCLUSION)
+    (known CONCLUSION)
+)
+
+% Infer (Backwards Chaining)
+% For a knowledge base of TYPE, try different Rules of Inference (roi) to infer new values.
+% Succeeds when an inference was made successfully, inference is added to "known", 
+% and the rule is added to "step"
+((infer TYPE)
+    (rule RULE)
+	(known CLAUSE)
+	(roi RULE TYPE CLAUSE RESULT)
+	(negg known RESULT)
+	(addcl ((known RESULT)))
+    %(addToKB RESULT)
+	(addcl ((step RULE)))
+)
+
+% Infer (Forward Chaining)
+% For a knowledge base of TYPE, try the Rules of Inference (roi) specified in steps to infer new values.
+% Succeeds when an inference was made successfully and the inference is added as a "known"
+((infer2 TYPE ()))
+((infer2 TYPE (STEP | T))
+    (!)
+	%(step STEP)
+	(known CLAUSE)
+	(roi STEP TYPE CLAUSE RESULT)
+	(negg conclusion RESULT)
+	(addcl ((conclusion RESULT)))
+	%(addToKB RESULT)
+	(addcl ((known RESULT)))
+    (infer2 TYPE T)
+)
+
+% Return
+((return PREDICATE RESULT)
+	(PREDICATE A)
+	(return PREDICATE (RESULT|A))
+)
+((return PREDICATE RESULT))
+
+% Small Prover (Backward Chaining)
+% Taking PREMISES of TYPE, attempt to reach CONCLUSION within two inferences, returned as STEPS.
+% Add PREMISES as "known"s, CONCLUSION as a conclusion. Utilize infer one time to add new "known"s.
+% Check to see if conclusion has been reached.
+((small_prover TYPE PREMISES CONCLUSION STEPS)
+    (var STEPS)
+    (destroyKB)
+    (addcl ((known PREMISES))) % Preserve initial premises. Could be useful with AndIntroduction
+    (buildKB PREMISES)  
+    (addcl ((conclusion CONCLUSION)))
+    (infer TYPE)
+    (check TYPE)  
+    (findall STEP 
+        ((step STEP))
+        STEPS
+    )    
+)
+
+% Small Prover (Forward Chaining)
+((small_prover TYPE PREMISES CONCLUSION STEPS)
+    (var CONCLUSION)
+    (destroyKB)
+    (addcl ((known PREMISES))) % Preserve initial premises. Could be useful with AndIntroduction
+    (buildKB PREMISES)
+    %(buildSteps STEPS)
+    (infer2 TYPE STEPS)
+    (infer2 TYPE STEPS)
+    (findall CLSE              % add conclusion clauses into CONCLUSION
+        ((conclusion CLSE))    % if CLSE is conclusion
+        CONCLUSION             % save list into CONCLUSION
+    )
+)
+((small_prover TYPE PREMISES CONCLUSION STEPS)
+    (var CONCLUSION)
+    (destroyKB)
+    (addcl ((known PREMISES))) % Preserve initial premises. Could be useful with AndIntroduction
+    (buildKB PREMISES)
+    %(buildSteps STEPS)
+    (infer2 TYPE STEPS)
+    (findall CLSE              % add conclusion clauses into CONCLUSION
+        ((conclusion CLSE))    % if CLSE is conclusion
+        CONCLUSION             % save list into CONCLUSION
+    )
+)
+
+% ((roi NAME TYPE PREMISES CONCLUSION)) 
+% Holds if the rule of inference with name NAME and premises PREMISES written in TYPE (cnf or inf)
+% can be used to infer CONCLUSION.
+
+% Modified from small_prover.frl
+
+((roi UnitResolution  cnf ((A or B)) (A))
+   (known (~ B))
+)
+((roi UnitResolution  cnf (A or B) (A))
+   (known (~ B))
+)
+((roi UnitResolution  cnf ((A or B)) (B))
+   (known (~ A))
+)
+((roi UnitResolution  cnf (A or B) (B))
+   (known (~ A))
+)
+
+((roi UnitResolution  inf   ((~ A) imp B) (A))
+   (known (~ B))
+) 
+
+% Rules
+((rule UnitResolution))
+((rule deMorgan))
+%((rule AndIntroduction))
+((rule ModusPonens))
+((rule AndElimination))
+
+% ModusPonens
+((roi ModusPonens inf ((A imp B)) B)
+	(known (A))
+)
+((roi ModusPonens inf (A imp  B) B)
+	(known (A))
+)
+((roi ModusPonens inf ((A imp B) (A)) B))
+
+((addToKB (~ A))
+    (negg known (~ A))
+    (addcl ((known (~ A))))
+)
+((addToKB A)
+    (negg length A 1)
+    (negg known A)
+    (addcl ((known A)))
+)
+((addToKB A)
+   (negg known (A))
+   (addcl ((known (A))))
+)
+((addToKB A))
+
+
+/*************** The following is modified from small_prover.frl *********/
+
+% UnitResolution CNF form
+((roi UnitResolution  cnf ((A or B) (~ B))  (A))) 
+((roi UnitResolution  cnf ((A or B) (~ A))  (B))) 
+
+% UnitResolution INF form
+((roi UnitResolution  inf  ( ( (~ A) imp B) (~ B))  (A))) 
+
+% AndElimination - Modified
+((roi AndElimination _ ((A)) ((A)))
+   (addToKB A)
+)
+((roi AndElimination _ ((A and | T)) L)
+   (addToKB A)
+   (roi AndElimination _ (T) L2)
+   (append ((A)) L2 L)
+)
+((roi AndElimination _ (A) ((A)))
+   (addToKB A)
+)
+((roi AndElimination _ (A and | T) L)
+   (addToKB A)
+   (roi AndElimination _ (T) L2)
+   (append ((A)) L2 L)
+)
+/*
+((roi AndElimination _ ((A and | T)) (A))) 
+((roi AndElimination _ ((A and | T )) (B))(member B T)) 
+*/
+
+% AndIntroduction
+((roi AndIntroduction _ () ())) 
+((roi AndIntroduction _  (A | T) ( A and | T1) ) 
+    (negg member_op T) 
+    (roi AndIntroduction _ T T1)) 
+
+% Operators
+((operators (and or imp ~))) 
+((member_op L)(operators OPS )(member L OPS)) 
+
+% De Morgan's Rules (some of the clauses):
+% Some of this was written by Taylor
+% Modified to be called via ROI
+((roi deMorgan cnf ((~ (A and B) )) ((~ A) or (~ B)))) 
+((roi deMorgan cnf ((~ (A and B and | T) )) ((~ A) or (~ B) or T1))
+	(deMorgan (~ T) T1)(!)) 
+((roi deMorgan cnf ((~ (A or B) )) ((~ A) and (~ B)))) 
+((roi deMorgan cnf ((~ (A or B or | T) )) ((~ A) and (~ B) and T1))
+	(deMorgan (~ T) T1)(!)) 
+((roi deMorgan cnf ((~ (A and B or | T) )) ((~ A) or (~ B) and T1))
+	(deMorgan (~ T) T1)(!))
+((roi deMorgan cnf ((~ (A or B and | T) )) ((~ A) and (~ B) or T1))
+	(deMorgan (~ T) T1)(!)) 
+((roi deMorgan cnf (~ (A)) (~ A)))
+
+
+
+
+/************* The following is modified from list_pro.frl ***************/
+
+% Member ((member ELEMENT LIST))
+% is true if ELEMENT is a member of LIST
+((member H (H|_)))     % the head of a list is an element of that list
+((member E ( _| T ))   % otherwise, E is an element of the list if it
+    (member E T)     % is an element of its tail
+)
+
+% Length ((length LIST N))
+% holds when N is the length of (number of elements in) the list LIST:
+/*
+    The length of a non empty list is 1 + length of its tail;
+    The length of an empty list is 0. 
+    The length predicate makes use of the built in predicate sum  (sum X Y Z) holds when it is true 
+    that X+Y is equal to Z
+*/
+((length () 0 ))
+((length (_|T) N)
+    (length T N1)
+    (sum N1 1 N)
+)
+
+% Append ((append LIST1 LIST2 OUTLIST))
+% holds if L is the list L1 followed by the list L2.  To write this predicate we note the following: 
+/*
+    the head of L is the same as the head of L1
+    the tail of L is the tail of L1 followed by L2
+*/
+((append () L L))  %when L1 is () L is the same as L2 
+((append (H1|T1) L2 (H1|T))
+    (append T1 L2 T)
+)
+
+    
+
+% Run a series of tests and show sample output
+?((testall))
