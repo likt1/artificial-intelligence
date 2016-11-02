@@ -12,15 +12,44 @@
 % KNOWLEDGE BASE
 % Provided by user. User should specify ((given X)), e.g. ((given p)), ((p or q)) -> yes
 
-%test predicates
-((test_one)
-   (small_prover cnf (((~ a) and b and (a or c))) (c) STEPS)
-   (pp STEPS) 
-)
 
 % Destruct KB
 ?((dict X)(kill X)(fail))
 ((destroyKB)(kill known)(kill conclusion)(kill step))
+
+%test predicates
+((tests (testAEUR_Back testMPUR_Back testURAE_Back)))
+
+((testall)
+    (tests TESTS)
+    (test TESTS)
+)
+((test ()))
+((test (TEST | T))
+    (pp)
+    
+    (p '===' TEST '===')
+    (pp)
+    (TEST)
+    (test T)
+    (pp)
+)
+
+((testMPUR_Back)
+    (pp "?(small_prover inf ((a imp ((~ b) imp c))(a)(~ c)) (b) STEPS)")
+    (small_prover inf ((a imp ((~ b) imp c))(a)(~ c)) (b) STEPS) 
+    (pp STEPS)
+)
+((testAEUR_Back)
+	(pp "?(small_prover cnf (((~ a) and b and (a or c))) (c) STEPS)")
+	(small_prover cnf (((~ a) and b and (a or c))) (c) STEPS)
+	(pp STEPS) 
+)
+((testURAE_Back)
+    (pp "(small_prover cnf ((~ (a and b)) or (~ c)) ((~ a) or (~ b)) STEPS)")
+	(small_prover cnf (((~ (a and b)) or c)(~ c)) ((~ a) or (~ b)) STEPS)
+	(pp STEPS)
+)
 
 % Build Knowledge Base
 % Takes a list and adds each element as a "known" predicate.
@@ -43,9 +72,14 @@
 
 % Checks knowledge base to see if conclusion is known.
 % That is, succeeds when the conclusion has been inferred.
-((check)
-   (conclusion CONCLUSION)
-   (known CONCLUSION)
+((check TYPE)
+    (conclusion CONCLUSION)
+    (known CONCLUSION)
+)
+((check TYPE)
+    (infer TYPE)
+    (conclusion CONCLUSION)
+    (known CONCLUSION)
 )
 
 % Infer (Backwards Chaining)
@@ -53,11 +87,12 @@
 % Succeeds when an inference was made successfully, inference is added to "known", 
 % and the rule is added to "step"
 ((infer TYPE)
+    (rule RULE)
 	(known CLAUSE)
-	(rule RULE)
 	(roi RULE TYPE CLAUSE RESULT)
 	(negg known RESULT)
 	(addcl ((known RESULT)))
+    %(addToKB RESULT)
 	(addcl ((step RULE)))
 )
 
@@ -71,8 +106,9 @@
 	(roi STEP TYPE CLAUSE RESULT)
 	(negg conclusion RESULT)
 	(addcl ((conclusion RESULT)))
-   (addcl ((known RESULT)))
-   (infer2 TYPE T)
+	%(addToKB RESULT)
+	(addcl ((known RESULT)))
+    (infer2 TYPE T)
 )
 
 % Return
@@ -87,57 +123,41 @@
 % Add PREMISES as "known"s, CONCLUSION as a conclusion. Utilize infer one time to add new "known"s.
 % Check to see if conclusion has been reached.
 ((small_prover TYPE PREMISES CONCLUSION STEPS)
-	(var STEPS)
-	(destroyKB)
-	(addcl ((known PREMISES))) % Preserve initial premises. Could be useful with AndIntroduction
-	(buildKB PREMISES)  
-	(addcl ((conclusion CONCLUSION)))
-	(infer TYPE)
-	(check)  
-	(findall STEP 
-      ((step STEP))
-      STEPS
-   )
-)
-% Small Prover OVERLOAD
-% Tries two layers of inference before checking.
-((small_prover TYPE PREMISES CONCLUSION STEPS)
-	(var STEPS)
-	(destroyKB)
-	(addcl ((known PREMISES))) % Preserve initial premises. Could be useful with AndIntroduction
-	(buildKB PREMISES)  
-	(addcl ((conclusion CONCLUSION)))
-	(infer TYPE)
-	(infer TYPE)  
-	(check)
-   (findall STEP 
-      ((step STEP))
-      STEPS
-   )
+    (var STEPS)
+    (destroyKB)
+    (addcl ((known PREMISES))) % Preserve initial premises. Could be useful with AndIntroduction
+    (buildKB PREMISES)  
+    (addcl ((conclusion CONCLUSION)))
+    (infer TYPE)
+    (check TYPE)  
+    (findall STEP 
+        ((step STEP))
+        STEPS
+    )    
 )
 
 % Small Prover (Forward Chaining)
 ((small_prover TYPE PREMISES CONCLUSION STEPS)
-	(var CONCLUSION)
-	(destroyKB)
-	(addcl ((known PREMISES))) % Preserve initial premises. Could be useful with AndIntroduction
-	(buildKB PREMISES)
-	%(buildSteps STEPS)
-	(infer2 TYPE STEPS)
-	(infer2 TYPE STEPS)
-   (findall CLSE              % add conclusion clauses into CONCLUSION
-     ((conclusion CLSE))    % if CLSE is conclusion
-     CONCLUSION             % save list into CONCLUSION
-   )
+    (var CONCLUSION)
+    (destroyKB)
+    (addcl ((known PREMISES))) % Preserve initial premises. Could be useful with AndIntroduction
+    (buildKB PREMISES)
+    %(buildSteps STEPS)
+    (infer2 TYPE STEPS)
+    (infer2 TYPE STEPS)
+    (findall CLSE              % add conclusion clauses into CONCLUSION
+        ((conclusion CLSE))    % if CLSE is conclusion
+        CONCLUSION             % save list into CONCLUSION
+    )
 )
 ((small_prover TYPE PREMISES CONCLUSION STEPS)
-	(var CONCLUSION)
-	(destroyKB)
-	(addcl ((known PREMISES))) % Preserve initial premises. Could be useful with AndIntroduction
-	(buildKB PREMISES)
-	%(buildSteps STEPS)
-	(infer2 TYPE STEPS)
-	(findall CLSE              % add conclusion clauses into CONCLUSION
+    (var CONCLUSION)
+    (destroyKB)
+    (addcl ((known PREMISES))) % Preserve initial premises. Could be useful with AndIntroduction
+    (buildKB PREMISES)
+    %(buildSteps STEPS)
+    (infer2 TYPE STEPS)
+    (findall CLSE              % add conclusion clauses into CONCLUSION
         ((conclusion CLSE))    % if CLSE is conclusion
         CONCLUSION             % save list into CONCLUSION
     )
@@ -169,19 +189,24 @@
 % Rules
 ((rule UnitResolution))
 ((rule deMorgan))
-((rule AndElimination))
 %((rule AndIntroduction))
 ((rule ModusPonens))
+((rule AndElimination))
 
 % ModusPonens
-((roi ModusPonens inf ((A imp B)) (B))
+((roi ModusPonens inf ((A imp B)) B)
 	(known (A))
 )
-((roi ModusPonens inf (A imp  B) (B))
+((roi ModusPonens inf (A imp  B) B)
 	(known (A))
 )
-((roi ModusPonens inf ((A imp B) (A)) (B)))
+((roi ModusPonens inf ((A imp B) (A)) B))
 
+((addToKB A)
+    (length A 1)
+    (negg known (A))
+    (addcl ((known (A))))
+)
 ((addToKB A)
    (negg known A)
    (addcl ((known A)))
@@ -200,18 +225,18 @@
 
 % AndElimination - Modified
 ((roi AndElimination _ ((A)) ((A)))
-   (addToKB (A))
+   (addToKB A)
 )
 ((roi AndElimination _ ((A and | T)) L)
-   (addToKB (A))
+   (addToKB A)
    (roi AndElimination _ (T) L2)
    (append ((A)) L2 L)
 )
 ((roi AndElimination _ (A) ((A)))
-   (addToKB (A))
+   (addToKB A)
 )
 ((roi AndElimination _ (A and | T) L)
-   (addToKB (A))
+   (addToKB A)
    (roi AndElimination _ (T) L2)
    (append ((A)) L2 L)
 )
