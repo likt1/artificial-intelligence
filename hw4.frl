@@ -78,12 +78,9 @@
 % Return
 ((return PREDICATE RESULT)
 	(PREDICATE A)
-	(negg member A RESULT)
 	(return PREDICATE (RESULT|A))
 )
-((return PREDICATE RESULT)
-	(negg PREDICATE A)
-)
+((return PREDICATE RESULT))
 
 % Small Prover (Backward Chaining)
 % Taking PREMISES of TYPE, attempt to reach CONCLUSION within two inferences, returned as STEPS.
